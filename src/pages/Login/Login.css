@@ -1,182 +1,125 @@
+/* Container utama full layar, background putih */
 .login-page {
-  width: 100%;
-  min-width: 1440px;
-  min-height: 1024px;
+  width: 100vw;
+  height: 100vh;
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  position: relative;
+  justify-content: center;  /* vertikal tengah */
+  align-items: center;      /* horizontal tengah */
+  padding: 20px;
+  box-sizing: border-box;
 }
 
+/* Branding wrapper */
 .branding-header {
   display: flex;
-  width: 375px;
-  height: 122px;
-  padding: 10px;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
-  position: absolute;
-  left: 532px;
-  top: 199px;
+  margin-bottom: 30px;
+  font-family: Inter, sans-serif;
+  color: #000000;
 }
 
 .shield-icon {
   width: 48px;
   height: 48px;
-  flex-shrink: 0;
   color: #000;
-}
-
-.branding-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
 }
 
 .brand-name {
-  color: #000;
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 36px;
-  font-style: normal;
   font-weight: 700;
-  line-height: normal;
+  font-size: 36px;
   margin: 0;
 }
 
 .brand-tagline {
-  color: #000;
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 20px;
-  font-style: normal;
   font-weight: 400;
-  line-height: normal;
+  font-size: 20px;
   margin: 0;
 }
 
+/* Card login */
 .login-card {
-  display: flex;
-  width: 589px;
-  padding: 20px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 30px;
-  border-radius: 10px;
-  border: 1px solid #7a7a7a;
   background: #1e1e1e;
-  position: absolute;
-  left: 437px;
-  top: 362px;
-}
-
-.login-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-  align-self: stretch;
-}
-
-.login-title {
-  align-self: stretch;
+  padding: 30px 25px;
+  border-radius: 10px;
+  width: 380px;
+  max-width: 90vw;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
   color: #f5f5f5;
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 24px;
-  font-style: normal;
+  box-sizing: border-box;
+}
+
+/* Form title dan subtitle */
+.login-title {
   font-weight: 700;
-  line-height: normal;
-  margin: 0;
+  font-size: 24px;
+  margin-bottom: 10px;
 }
 
 .login-subtitle {
-  align-self: stretch;
-  color: #f5f5f5;
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 20px;
-  font-style: normal;
   font-weight: 400;
-  line-height: normal;
-  margin: 0;
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: #ccc;
 }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-  align-self: stretch;
-}
-
+/* Form fields */
 .form-field {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-  align-self: stretch;
+  margin-bottom: 15px;
 }
 
 .field-label {
-  align-self: stretch;
-  color: #f5f5f5;
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 20px;
-  font-style: normal;
   font-weight: 600;
-  line-height: normal;
+  font-size: 16px;
+  margin-bottom: 5px;
+  display: block;
+  color: #f5f5f5;
 }
 
 .input-wrapper {
   display: flex;
-  width: 549px;
-  padding: 10px;
   align-items: center;
   gap: 10px;
   border-radius: 10px;
-  border: 1px solid #f5f5f5;
+  padding: 10px;
   background: #2c2c2c;
+  border: 1px solid #f5f5f5;
 }
 
 .input-icon {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
+  color: #f5f5f5;
   flex-shrink: 0;
 }
 
 .text-input {
-  color: #f5f5f5;
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 200;
-  line-height: normal;
   background: transparent;
   border: none;
   outline: none;
-  flex: 1;
+  color: #f5f5f5;
+  font-size: 16px;
+  width: 100%;
 }
 
 .text-input::placeholder {
   color: #f5f5f5;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
+/* Button */
 .login-button {
-  display: flex;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  align-self: stretch;
-  border-radius: 10px;
-  border: 1px solid #f5f5f5;
+  margin-top: 15px;
+  width: 100%;
   background: #5cc8ba;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
   color: #f5f5f5;
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -185,7 +128,40 @@
   background: #4db5a7;
 }
 
-.login-button:focus {
-  outline: 2px solid #f5f5f5;
-  outline-offset: 2px;
+/* Responsive mobile */
+@media (max-width: 480px) {
+  .brand-name {
+    font-size: 28px;
+  }
+  
+  .brand-tagline {
+    font-size: 16px;
+  }
+  
+  .login-card {
+    width: 100%;
+    padding: 20px;
+  }
+  
+  .login-title {
+    font-size: 20px;
+  }
+  
+  .login-subtitle {
+    font-size: 14px;
+  }
+  
+  .text-input {
+    font-size: 14px;
+  }
+  
+  .login-button {
+    font-size: 14px;
+    padding: 12px;
+  }
+  
+  .input-icon {
+    width: 18px;
+    height: 18px;
+  }
 }

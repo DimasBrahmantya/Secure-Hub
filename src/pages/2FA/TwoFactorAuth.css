@@ -1,14 +1,14 @@
 /* General Layout */
 .two-factor-container {
-  min-height: 100vh;
-  min-width: 1440px;
+    width: 100vw;
+  height: 100vh;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  background-color: #ffffff;
-  width: 100%;
+  justify-content: center;  /* vertikal tengah */
+  align-items: center;      /* horizontal tengah */
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /* Branding */
@@ -17,18 +17,21 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2.5rem; 
 }
 
 .two-factor-branding h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #1e1e1e;
+ font-weight: 700;
+  font-size: 36px;
+  margin: 0;
+  color: #000000;
 }
 
 .two-factor-branding p {
-  font-size: 1.125rem;
-  color: #1e1e1e;
+  font-weight: 400;
+  font-size: 20px;
+  margin: 0;
+    color: #000000;
 }
 
 /* Card */
