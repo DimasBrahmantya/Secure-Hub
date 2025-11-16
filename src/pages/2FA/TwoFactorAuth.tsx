@@ -52,6 +52,8 @@ export default function TwoFactorAuth() {
       style: { background: "#1E1E1E", color: "#FFFFFF", borderRadius: "10px", fontSize: "18px" },
       duration: 2000,
     });
+
+    navigate("/dashboard");
   };
 
   return (
