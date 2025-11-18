@@ -30,7 +30,7 @@ export default function Dashboard() {
     { title: "Last Backup", value: "2 hours ago", subtitle: "Next backup in 22 hours", icon: <Database className="w-7 h-7 text-orange-500" /> },
     { title: "Threats Blocked", value: "127", subtitle: "This week", icon: <Shield className="w-7 h-7 text-red-600" /> },
     { title: "Active Monitoring", value: "24/7", subtitle: "Real-time protection", icon: <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} /> },
-  ];
+  ];//isi penting dash board
 
   const features = [
     {
