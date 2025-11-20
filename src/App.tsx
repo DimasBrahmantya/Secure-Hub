@@ -10,8 +10,19 @@ import { Login } from "./pages/Login/Login";
 import TwoFactorAuth from "./pages/2FA/TwoFactorAuth";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import AntiPhishing from "./pages/AntiPhishing/AntiPhising";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
+import UrlAnalysis from "./pages/Analysis/Analysis";
+import BackupIndex from "./pages/Backup/Backup";
+import BackupProgress from "./pages/Backup/Progress";
+import RestoreProgress from "./pages/Restore/Progress";
+import RestoreSuccess from "./pages/Restore/Success";
+import DeleteSuccess from "./pages/Delete/Success";
+import AdminPanel from "./pages/AdminPanel/AdminPanel";
+import UserManagement from "./pages/UserManagement/UserManagement";
+import Statistics from "./pages/Statistics&Reports/Statistics";
+import Monitoring from "./pages/Monitoring & Notification/Monitoring";
 
 
 const queryClient = new QueryClient();
@@ -27,26 +38,20 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/2fa" element={<TwoFactorAuth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/antiphishing" element={<AntiPhishing/>}/>
+          <Route path="/analysis" element={<UrlAnalysis/>}/>
+          <Route path="/backup" element={<BackupIndex />} />
+          <Route path="/backup/progress" element={<BackupProgress />} />
+          <Route path="/restore/progress" element={<RestoreProgress />} />
+          <Route path="/restore/success" element={<RestoreSuccess />} />
+          <Route path="/delete/success" element={<DeleteSuccess />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/users" element={<UserManagement />} />
+          <Route path="/statistics" element={<Statistics />} />
+          <Route path="/monitoring" element={<Monitoring />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
     </QueryClientProvider>
   );
 }
-// const App = () => (
-//   <QueryClientProvider client={queryClient}>
-//     <TooltipProvider>
-//       <Toaster />
-//       <Sonner />
-//       <BrowserRouter>
-//         <Routes>
-//           <Route path="/" element={<Index />} />
-//           <Route path="/login" element={<Login />} />
-//           <Route path="/2fa" element={<TwoFactorAuth />} />
-//           <Route path="*" element={<NotFound />} />
-//         </Routes>
-//       </BrowserRouter>
-//     </TooltipProvider>
-//   </QueryClientProvider>
-// );
-
