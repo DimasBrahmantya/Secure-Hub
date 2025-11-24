@@ -2,48 +2,87 @@ import { useState } from "react";
 import { Inbox, Lock, Shield } from "lucide-react";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
-import {  toast } from "sonner";
+import { toast } from "sonner";
 
 export const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!email || !password) {
       toast.error("Please enter both email and password.", {
         description: "Both fields are required.",
-        style: { background: "#1E1E1E", color: "#FFFFFF", borderRadius: "10px", fontSize: "18px" },
-        duration: 2000, // durasi toast (ms), bisa disesuaikan
-        action: {
-          label: "Ok",
-          onClick: () => {
-            /* misal reset focus atau apapun */
-          },
+        style: {
+          background: "#1E1E1E",
+          color: "#FFFFFF",
+          borderRadius: "10px",
+          fontSize: "18px",
         },
+        duration: 2000,
       });
       return;
     }
 
-    console.log("Login submitted", { email, password });
+    try {
+      const response = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    toast.success("Login Successful!", {
-      description: "Redirecting to Two‑Factor Authentication…",
-      style: { background: "#1E1E1E", color: "#FFFFFF", borderRadius: "10px", fontSize: "18px" },
-      duration: 2000,
-    });
+      const data = await response.json();
 
-    // Beri sedikit delay supaya user bisa lihat toast sebelum redirect
-    setTimeout(() => {
-      navigate("/2fa");
-    }, 1000);
+      if (!response.ok) {
+        
+        toast.error("Login Failed", {
+          description: data.message || "Invalid email or password",
+          style: {
+            background: "#1E1E1E",
+            color: "#FFFFFF",
+            borderRadius: "10px",
+            fontSize: "18px",
+          },
+          duration: 2000,
+        });
+        return;
+      }
+      localStorage.setItem("userId", data.userId);
+
+      toast.success("Login Successful!", {
+        description: "Redirecting to Two-Factor Authentication…",
+        style: {
+          background: "#1E1E1E",
+          color: "#FFFFFF",
+          borderRadius: "10px",
+          fontSize: "18px",
+        },
+        duration: 2000,
+      });
+
+      setTimeout(() => {
+        navigate("/2fa");
+      }, 1000);
+    } catch (error) {
+      toast.error("Server Error", {
+        description: "Could not connect to backend",
+        style: {
+          background: "#1E1E1E",
+          color: "#FFFFFF",
+          borderRadius: "10px",
+          fontSize: "18px",
+        },
+        duration: 2000,
+      });
+    }
   };
 
   return (
     <div className="login-page">
-
       <header className="branding-header">
         <Shield className="shield-icon" />
         <div className="branding-content">

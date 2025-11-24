@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ScanItem {
   url: string;
@@ -7,13 +8,7 @@ interface ScanItem {
   time: string;
 }
 
-const statusStyles = {
-  Safe: "bg-green-900 text-green-300 border border-green-400/40",
-  Danger: "bg-red-900 text-red-300 border border-red-400/40",
-  Warning: "bg-yellow-900 text-yellow-300 border border-yellow-400/40",
-};
-
-const scans: ScanItem[] = [
+const defaultScans: ScanItem[] = [
   {
     url: "https://secure-bank.com",
     status: "Safe",
@@ -40,7 +35,23 @@ const scans: ScanItem[] = [
   },
 ];
 
+const statusStyles = {
+  Safe: "bg-green-900 text-green-300 border border-green-400/40",
+  Danger: "bg-red-900 text-red-300 border border-red-400/40",
+  Warning: "bg-yellow-900 text-yellow-300 border border-yellow-400/40",
+};
+
 export default function RecentScans() {
+  const [scans, setScans] = useState<ScanItem[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("recent_scans");
+    const parsed = stored ? JSON.parse(stored) : [];
+
+    // Gabungkan default + user scans
+    setScans([...parsed, ...defaultScans]);
+  }, []);
+
   return (
     <div className="bg-[#2C2C2C] border border-black rounded-xl p-5 mt-6">
       <h2 className="text-lg font-semibold text-white">Recent URL Scans</h2>
@@ -70,7 +81,9 @@ export default function RecentScans() {
 
                 <td className="py-3">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[item.status]}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      statusStyles[item.status]
+                    }`}
                   >
                     {item.status}
                   </span>
