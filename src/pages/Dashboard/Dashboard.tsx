@@ -1,36 +1,48 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import Sidebar from "../../components/ui/Sidebar";
-import StatCard from "../../components/ui/StatCard";
-import RecentActivity from "../../components/ui/RecentActivity";
-import FeatureCard from "../../components/ui/FeatureCard";
-import { CheckCircle, Database, Shield, Activity, TrendingUp, LogOut } from "lucide-react";
+import Sidebar from "../../components/Sidebar";
+import StatCard from "../../components/StatCard";
+import RecentActivity from "../../components/RecentActivity";
+import FeatureCard from "../../components/FeatureCard";
+import {
+  CheckCircle,
+  Database,
+  Shield,
+  Activity,
+  TrendingUp,
+  LogOut,
+} from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    toast.success("Authentication Successful", {
-      description: "Welcome to SecureHub!!",
-      style: {
-        background: "#1E1E1E",
-        color: "#FFFFFF",
-        border: "none",
-        fontSize: "20px",
-        borderRadius: "10px",
-      },
-    });
-  }, []);
-
   const handleLogout = () => navigate("/login");
 
   const stats = [
-    { title: "Security Status", value: "Protected", subtitle: "All systems operational", icon: <CheckCircle className="w-6 h-6 text-teal-400" strokeWidth={2.5} /> },
-    { title: "Last Backup", value: "2 hours ago", subtitle: "Next backup in 22 hours", icon: <Database className="w-7 h-7 text-orange-500" /> },
-    { title: "Threats Blocked", value: "127", subtitle: "This week", icon: <Shield className="w-7 h-7 text-red-600" /> },
-    { title: "Active Monitoring", value: "24/7", subtitle: "Real-time protection", icon: <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} /> },
-  ];//isi penting dash board
+    {
+      title: "Security Status",
+      value: "Protected",
+      subtitle: "All systems operational",
+      icon: <CheckCircle className="w-6 h-6 text-teal-400" strokeWidth={2.5} />,
+    },
+    {
+      title: "Last Backup",
+      value: "2 hours ago",
+      subtitle: "Next backup in 22 hours",
+      icon: <Database className="w-7 h-7 text-orange-500" />,
+    },
+    {
+      title: "Threats Blocked",
+      value: "127",
+      subtitle: "This week",
+      icon: <Shield className="w-7 h-7 text-red-600" />,
+    },
+    {
+      title: "Active Monitoring",
+      value: "24/7",
+      subtitle: "Real-time protection",
+      icon: <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} />,
+    },
+  ];
 
   const features = [
     {
@@ -42,6 +54,7 @@ export default function Dashboard() {
         { label: "Threats Detected", value: "3" },
       ],
       buttonText: "Go to Anti-Phising",
+      navigateTo: "/antiphishing",
     },
     {
       icon: <Database className="w-7 h-7 text-orange-500" />,
@@ -52,6 +65,7 @@ export default function Dashboard() {
         { label: "Storage Used", value: "45.2 GB" },
       ],
       buttonText: "Manage Backup",
+      navigateTo: "/backup",
     },
     {
       icon: <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} />,
@@ -62,6 +76,7 @@ export default function Dashboard() {
         { label: "Pending Alert", value: "2" },
       ],
       buttonText: "View Notifications",
+      navigateTo: "/monitoring",
     },
     {
       icon: <TrendingUp className="w-8 h-8 text-green-500" strokeWidth={3} />,
@@ -72,17 +87,15 @@ export default function Dashboard() {
         { label: "AI Sensitivity", value: "High" },
       ],
       buttonText: "Admin Panel",
+      navigateTo: "/admin",
     },
   ];
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      {/* Sidebar tetap fixed */}
       <Sidebar />
 
-      {/* Konten utama */}
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-        {/* Header */}
         <header className="flex justify-between items-start mb-8">
           <div className="flex flex-col gap-3">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
@@ -92,6 +105,7 @@ export default function Dashboard() {
               Monitor and manage your security infrastructure
             </p>
           </div>
+
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80 transition-opacity"
@@ -101,7 +115,6 @@ export default function Dashboard() {
           </button>
         </header>
 
-        {/* Stats Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, idx) => (
             <StatCard
@@ -114,7 +127,6 @@ export default function Dashboard() {
           ))}
         </section>
 
-        {/* Features Grid */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {features.map((feature, idx) => (
             <FeatureCard
@@ -124,11 +136,11 @@ export default function Dashboard() {
               description={feature.description}
               stats={feature.stats}
               buttonText={feature.buttonText}
+              navigateTo={feature.navigateTo}
             />
           ))}
         </section>
 
-        {/* Recent Activity */}
         <RecentActivity />
       </main>
     </div>

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Stat {
   label: string;
@@ -11,6 +12,7 @@ interface FeatureCardProps {
   description: string;
   stats: Stat[];
   buttonText: string;
+  navigateTo?: string;
 }
 
 export default function FeatureCard({
@@ -19,7 +21,10 @@ export default function FeatureCard({
   description,
   stats,
   buttonText,
+  navigateTo,
 }: FeatureCardProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-[#2C2C2C] border border-black rounded-lg p-5 flex flex-col justify-between h-full">
       {/* Icon + Title */}
@@ -42,7 +47,10 @@ export default function FeatureCard({
       </div>
 
       {/* Button */}
-      <button className="mt-auto w-full bg-[#5CC8BA] border border-[#F5F5F5] rounded-lg px-3 py-2 text-sm font-semibold text-[#F5F5F5] hover:bg-[#4DB8AA] transition-colors">
+      <button
+        onClick={() => navigateTo && navigate(navigateTo)}
+        className="mt-auto w-full bg-[#5CC8BA] border border-[#F5F5F5] rounded-lg px-3 py-2 text-sm font-semibold text-[#F5F5F5] hover:bg-[#4DB8AA] transition-colors"
+      >
         {buttonText}
       </button>
     </div>
