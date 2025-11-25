@@ -36,25 +36,45 @@ export default function UrlAnalysis() {
   const [openBlock, setOpenBlock] = useState(false);
   const [openReport, setOpenReport] = useState(false);
 
-  // Simulasi scanning 0 → 100%
+  // 🔥 Ambil hasil scan dari localStorage lalu tentukan aman / bahaya
+  const loadScanResult = () => {
+    const stored = localStorage.getItem("recent_scans");
+    const list = stored ? JSON.parse(stored) : [];
+
+    const match = list.find((item: any) => item.url === targetUrl);
+
+    if (!match) {
+      // kalau tiba2 tidak ada, fallback dianggap Warning
+      setIsSafe(false);
+      return;
+    }
+
+    if (match.status === "Safe") {
+      setIsSafe(true);
+    } else {
+      setIsSafe(false);
+    }
+  };
+
+  // 🔥 Simulasi scanning 0 → 100%
   useEffect(() => {
     let total = 0;
 
     const interval = setInterval(() => {
-      total += 5;
+      total += 20;
       setProgress(total);
 
       if (total >= 100) {
         clearInterval(interval);
         setDone(true);
 
-        // Random AI result (safe/danger)
-        setIsSafe(Math.random() > 0.4);
+        // SET HASIL ANALISIS BERDASARKAN ANTIPHISHING
+        loadScanResult();
       }
     }, 250);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [targetUrl]);
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
@@ -68,7 +88,7 @@ export default function UrlAnalysis() {
           onLogout={() => navigate("/login")}
         />
 
-        {/* BACK BTN */}
+        {/* BACK BUTTON */}
         <button
           onClick={() => navigate("/antiphishing")}
           className="flex items-center gap-1 mb-6 text-white hover:opacity-70"
@@ -78,11 +98,8 @@ export default function UrlAnalysis() {
 
         {/* ANALYSIS CARD */}
         <div className="bg-[#2C2C2C] text-white rounded-xl p-6 border border-black w-full max-w-6xl">
-          {/* URL */}
           <p className="opacity-70 text-sm mb-1">Analyzing URL</p>
-          <h2 className="font-semibold text-lg mb-4 break-all">
-            {targetUrl}
-          </h2>
+          <h2 className="font-semibold text-lg mb-4 break-all">{targetUrl}</h2>
 
           {/* LOADING BAR */}
           {!done && (
@@ -101,7 +118,7 @@ export default function UrlAnalysis() {
           )}
 
           {/* RESULT */}
-          {done && (
+          {done && isSafe !== null && (
             <div className="bg-[#1D1D1D] rounded-lg p-5 border border-[#3A3A3A] flex flex-col gap-4">
               <div
                 className={`border rounded-lg p-4 flex items-start gap-3 ${
@@ -118,7 +135,9 @@ export default function UrlAnalysis() {
 
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {isSafe ? "Site Appears Safe" : "Potentially Dangerous Site"}
+                    {isSafe
+                      ? "Site Appears Safe"
+                      : "Potentially Dangerous Site"}
                   </h3>
                   <p className="text-sm opacity-80">
                     Threat score: {isSafe ? "9/10" : "3/10"}
@@ -179,7 +198,7 @@ export default function UrlAnalysis() {
         </div>
       </main>
 
-      {/* MODAL — BLOCK ACCESS */}
+      {/* MODAL BLOCK */}
       <Dialog open={openBlock} onOpenChange={setOpenBlock}>
         <DialogContent className="bg-[#1E1E1E] text-white border border-gray-700">
           <DialogHeader>
@@ -210,7 +229,7 @@ export default function UrlAnalysis() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL — REPORT URL */}
+      {/* MODAL REPORT */}
       <Dialog open={openReport} onOpenChange={setOpenReport}>
         <DialogContent className="bg-[#1E1E1E] text-white border border-gray-700">
           <DialogHeader>
@@ -218,8 +237,7 @@ export default function UrlAnalysis() {
               <Bug /> Report Suspicious URL
             </DialogTitle>
             <DialogDescription className="text-gray-300">
-              Laporkan URL ini kepada sistem kami agar dapat dianalisis lebih
-              lanjut.
+              Laporkan URL ini kepada sistem kami agar dapat dianalisis lebih lanjut.
             </DialogDescription>
           </DialogHeader>
 

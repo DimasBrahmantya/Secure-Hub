@@ -8,18 +8,90 @@ import {
 } from "lucide-react";
 import StatCard from "../../components/StatCard";
 import Sidebar from "../../components/Sidebar";
-import { useNavigate } from "react-router-dom";
 import RecentScans from "../../components/RecentScans";
+import { useNavigate } from "react-router-dom";
 
 export default function AntiPhishing() {
+  type Scan = {
+    url: string;
+    status: "Safe" | "Danger" | "Warning";
+    threat: string;
+    time: string;
+  };
   const [url, setUrl] = useState("");
+  const [scans, setScans] = useState<Scan[]>([]);
   const navigate = useNavigate();
 
   const handleLogout = () => navigate("/login");
 
+  const analyzeDomain = (domain: string | string[]) => {
+    if (
+      domain.includes("bank") ||
+      domain.includes("secure") ||
+      domain.includes("mycompany")
+    ) {
+      return { status: "Safe", threat: "None" };
+    }
+
+    if (
+      domain.includes("phish") ||
+      domain.includes("login") ||
+      domain.includes("verify") ||
+      domain.includes("update")
+    ) {
+      return { status: "Danger", threat: "Phishing Detected" };
+    }
+
+    return { status: "Warning", threat: "Suspicious Content" };
+  };
+
   const handleCheck = () => {
     if (!url.trim()) return;
-    navigate(`/analysis?url=${encodeURIComponent(url)}`); // langsung redirect
+
+    const formatted =
+      url.startsWith("http://") || url.startsWith("https://")
+        ? url
+        : `https://${url}`;
+
+    try {
+      const domain = new URL(formatted).hostname.toLowerCase();
+
+      // Tentukan status berdasarkan extension domain
+      const safeExt = [".com", ".co.id", ".my.id", ".id", ".go.id"];
+      const dangerExt = [".xyz", ".xxx", ".lol", ".icu", ".click"];
+
+      let status: "Safe" | "Danger" | "Warning" = "Warning";
+      let threat = "Suspicious Content";
+
+      if (safeExt.some((ext) => domain.endsWith(ext))) {
+        status = "Safe";
+        threat = "None";
+      } else if (dangerExt.some((ext) => domain.endsWith(ext))) {
+        status = "Danger";
+        threat = "Phishing Detected";
+      }
+
+      const newScan = {
+        url: formatted,
+        status,
+        threat,
+        time: "Just now",
+      };
+
+      // Ambil data lama
+      let stored = localStorage.getItem("recent_scans");
+      let list = stored ? JSON.parse(stored) : [];
+
+      // Masukkan data baru di awal
+      const updated = [newScan, ...list];
+
+      // Simpan ke localStorage
+      localStorage.setItem("recent_scans", JSON.stringify(updated));
+
+      navigate(`/analysis?url=${encodeURIComponent(formatted)}`);
+    } catch (err) {
+      console.error("Invalid URL");
+    }
   };
 
   return (
@@ -47,6 +119,7 @@ export default function AntiPhishing() {
         </header>
 
         <div className="w-full text-white flex flex-col gap-6">
+          {/* Stat Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               title="Safe URLs"
@@ -70,6 +143,7 @@ export default function AntiPhishing() {
             />
           </div>
 
+          {/* Input URL */}
           <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4">
             <label className="text-sm font-semibold">Masukkan URL</label>
 
@@ -78,7 +152,7 @@ export default function AntiPhishing() {
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://contoh.com"
+                placeholder="contoh.com"
                 className="flex-1 bg-white-400 border border-white-700 rounded-lg px-4 py-3 text-sm text-white"
               />
 
