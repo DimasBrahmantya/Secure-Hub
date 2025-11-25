@@ -21,7 +21,7 @@ export default function RestoreProgress() {
 
     let total = 0;
     const interval = setInterval(() => {
-      total += Math.floor(Math.random() * 12) + 6;
+      total += Math.floor(Math.random() * 12) + 15;
       if (total > 100) total = 100;
       setProgress(total);
       if (total >= 100) {

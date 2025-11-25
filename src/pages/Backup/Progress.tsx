@@ -21,7 +21,7 @@ export default function BackupProgress() {
 
     let total = 0;
     const interval = setInterval(() => {
-      total += Math.floor(Math.random() * 10) + 8; // random progress step
+      total += Math.floor(Math.random() * 10) + 15; // random progress step
       if (total > 100) total = 100;
       setProgress(total);
       if (total >= 100) {
