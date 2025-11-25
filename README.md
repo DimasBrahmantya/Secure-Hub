@@ -7,8 +7,8 @@
    SecureHub adalah aplikasi keamanan digital yang menyediakan fitur monitoring, backup data, anti-phishing, dan sistem notifikasi real-time untuk melindungi pengguna dari ancaman cyber.
 
 # Kelas-NIM-Nama-Username github
-D-202210370311010-Dimas Brahmantya Aryasena-@DimasBrahmantya
-D-202210370311004-Wilda Amanda Aquari-@imthemuse23
+1. D-202210370311010-Dimas Brahmantya Aryasena-@DimasBrahmantya
+2. D-202210370311004-Wilda Amanda Aquari-@imthemuse23
 
 # 🎨 Desain
 Figma Prototype
