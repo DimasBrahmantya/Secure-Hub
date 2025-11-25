@@ -1,4 +1,3 @@
-# React + TypeScript + Vite
 
 # 🔐 SecureHub – Advanced Security Platform
 
