@@ -128,7 +128,7 @@ export default function AntiPhishing() {
           </div>
 
           {/* Input */}
-          <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4">
+          <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4 ">
             <label className="text-2xl font-semibold ">Analyze URL</label>
             <p className="text-sm text-white-400">
               Enter a URL to scan for potential phishing threats

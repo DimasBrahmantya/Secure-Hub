@@ -76,7 +76,7 @@ export default function RecentScans({
   }, []);
 
   return (
-    <div className="bg-[#2C2C2C] border border-black rounded-xl p-5 mt-6">
+    <div className="bg-[#2C2C2C] border border-black rounded-xl p-5 ">
       <h2 className="text-lg font-semibold text-white">Recent URL Scans</h2>
       <p className="text-sm text-gray-400 mb-4">
         Latest URLs analyzed by AI
