@@ -20,6 +20,7 @@ import {
 } from "../../components/ui/dialog";
 
 import { Button } from "../../components/ui/button";
+import { blockURL, reportURL } from "../../store/storage";
 
 export default function UrlAnalysis() {
   const location = useLocation();
@@ -169,14 +170,20 @@ export default function UrlAnalysis() {
                 <div className="flex gap-4 mt-3">
                   <Button
                     variant="destructive"
-                    onClick={() => setOpenBlock(true)}
+                    onClick={() =>{ 
+                      blockURL(targetUrl);
+                      setOpenBlock(true);
+                    }}
                     className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
                   >
                     <ShieldBan className="w-5 h-5" /> Block Access
                   </Button>
 
                   <Button
-                    onClick={() => setOpenReport(true)}
+                    onClick={() =>{
+                      reportURL(targetUrl); 
+                      setOpenReport(true);
+                    }}
                     className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white"
                   >
                     <Bug className="w-5 h-5" /> Report URL

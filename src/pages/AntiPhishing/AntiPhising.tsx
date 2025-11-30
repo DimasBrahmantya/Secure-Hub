@@ -18,45 +18,25 @@ export default function AntiPhishing() {
     threat: string;
     time: string;
   };
+
   const [url, setUrl] = useState("");
-  const [scans, setScans] = useState<Scan[]>([]);
   const navigate = useNavigate();
 
   const handleLogout = () => navigate("/login");
 
-  const analyzeDomain = (domain: string | string[]) => {
-    if (
-      domain.includes("bank") ||
-      domain.includes("secure") ||
-      domain.includes("mycompany")
-    ) {
-      return { status: "Safe", threat: "None" };
-    }
+  const handleCheck = (manualURL?: string) => {
+    const targetURL = manualURL ?? url;
 
-    if (
-      domain.includes("phish") ||
-      domain.includes("login") ||
-      domain.includes("verify") ||
-      domain.includes("update")
-    ) {
-      return { status: "Danger", threat: "Phishing Detected" };
-    }
-
-    return { status: "Warning", threat: "Suspicious Content" };
-  };
-
-  const handleCheck = () => {
-    if (!url.trim()) return;
+    if (!targetURL.trim()) return;
 
     const formatted =
-      url.startsWith("http://") || url.startsWith("https://")
-        ? url
-        : `https://${url}`;
+      targetURL.startsWith("http://") || targetURL.startsWith("https://")
+        ? targetURL
+        : `https://${targetURL}`;
 
     try {
       const domain = new URL(formatted).hostname.toLowerCase();
 
-      // Tentukan status berdasarkan extension domain
       const safeExt = [".com", ".co.id", ".my.id", ".id", ".go.id"];
       const dangerExt = [".xyz", ".xxx", ".lol", ".icu", ".click"];
 
@@ -78,20 +58,23 @@ export default function AntiPhishing() {
         time: "Just now",
       };
 
-      // Ambil data lama
-      let stored = localStorage.getItem("recent_scans");
-      let list = stored ? JSON.parse(stored) : [];
+      // === FIX: Hilangkan duplikasi ===
+      let stored = JSON.parse(localStorage.getItem("recent_scans") || "[]");
+      const filtered = stored.filter((item: any) => item.url !== formatted);
+      const updated = [newScan, ...filtered];
 
-      // Masukkan data baru di awal
-      const updated = [newScan, ...list];
-
-      // Simpan ke localStorage
       localStorage.setItem("recent_scans", JSON.stringify(updated));
 
       navigate(`/analysis?url=${encodeURIComponent(formatted)}`);
     } catch (err) {
       console.error("Invalid URL");
     }
+  };
+
+  // Rescan handler
+  const handleRescan = (selectedURL: string) => {
+    setUrl(selectedURL);
+    handleCheck(selectedURL);
   };
 
   return (
@@ -119,7 +102,8 @@ export default function AntiPhishing() {
         </header>
 
         <div className="w-full text-white flex flex-col gap-6">
-          {/* Stat Cards */}
+
+          {/* Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               title="Safe URLs"
@@ -143,9 +127,12 @@ export default function AntiPhishing() {
             />
           </div>
 
-          {/* Input URL */}
+          {/* Input */}
           <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4">
-            <label className="text-sm font-semibold">Masukkan URL</label>
+            <label className="text-2xl font-semibold ">Analyze URL</label>
+            <p className="text-sm text-white-400">
+              Enter a URL to scan for potential phishing threats
+            </p>
 
             <div className="flex gap-3">
               <input
@@ -157,7 +144,7 @@ export default function AntiPhishing() {
               />
 
               <button
-                onClick={handleCheck}
+                onClick={() => handleCheck()}
                 className="flex items-center gap-2 bg-teal-400 hover:bg-teal-500 rounded-lg px-6 py-3 font-semibold text-white"
               >
                 <Search className="w-5 h-5" />
@@ -166,7 +153,9 @@ export default function AntiPhishing() {
             </div>
           </div>
 
-          <RecentScans />
+          {/* Recent Scans */}
+          <RecentScans onScan={handleRescan} />
+
         </div>
       </main>
     </div>
