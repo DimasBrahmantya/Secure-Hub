@@ -6,7 +6,7 @@ export interface BackupItem {
   name: string;
   size: string;
   createdAt: string; // ISO
-  status: "ready" | "restoring" | "deleted";
+  status: "ready" | "restoring" | "restored" |"deleted";
 }
 
 interface BackupStore {
