@@ -17,7 +17,7 @@ export default function DeleteSuccess() {
           onLogout={() => navigate("/login")}
         />
 
-        <div className="bg-[#2C2C2C] p-6 rounded-xl border border-black max-w-6xl">
+        <div className="bg-[#2C2C2C] p-6 rounded-xl border border-black max-w-4xl">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-green-800 rounded-full">
               <CheckCircle className="w-6 h-6 text-green-300" />
@@ -30,13 +30,11 @@ export default function DeleteSuccess() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <button
-              onClick={() => navigate("/backup")}
-              className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold"
-            >
+          <div className="mt-6 flex gap-3">
+            <button onClick={() => navigate("/backup")} 
+            className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold">
               Back to backups
-            </button>
+              </button>
           </div>
         </div>
       </main>
