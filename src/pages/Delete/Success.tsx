@@ -17,7 +17,7 @@ export default function DeleteSuccess() {
           onLogout={() => navigate("/login")}
         />
 
-        <div className="bg-[#2C2C2C] p-6 rounded-xl border border-black max-w-4xl">
+        <div className="bg-[#2C2C2C] p-6 rounded-xl border border-black max-w-6xl">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-green-800 rounded-full">
               <CheckCircle className="w-6 h-6 text-green-300" />
