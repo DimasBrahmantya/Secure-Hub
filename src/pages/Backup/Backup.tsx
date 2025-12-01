@@ -160,6 +160,7 @@ export default function BackupIndex() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleRestore(b.id)}
+                        disabled={b.status !== "ready"}
                         className="px-3 py-1 rounded bg-[#5CC8BA] hover:bg-[#4DB8AA] text-white font-semibold"
                       >
                         Restore

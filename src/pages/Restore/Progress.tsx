@@ -26,7 +26,7 @@ export default function RestoreProgress() {
       setProgress(total);
       if (total >= 100) {
         clearInterval(interval);
-        updateBackup(id, { status: "ready" });
+        updateBackup(id, { status: "restored" });
         setTimeout(() => navigate("/restore/success", { state: { id } }), 700);
       }
     }, 500);

@@ -8,18 +8,73 @@ import {
 } from "lucide-react";
 import StatCard from "../../components/StatCard";
 import Sidebar from "../../components/Sidebar";
-import { useNavigate } from "react-router-dom";
 import RecentScans from "../../components/RecentScans";
+import { useNavigate } from "react-router-dom";
 
 export default function AntiPhishing() {
+  type Scan = {
+    url: string;
+    status: "Safe" | "Danger" | "Warning";
+    threat: string;
+    time: string;
+  };
+
   const [url, setUrl] = useState("");
   const navigate = useNavigate();
 
   const handleLogout = () => navigate("/login");
 
-  const handleCheck = () => {
-    if (!url.trim()) return;
-    navigate(`/analysis?url=${encodeURIComponent(url)}`); // langsung redirect
+  const handleCheck = (manualURL?: string) => {
+    const targetURL = manualURL ?? url;
+
+    if (!targetURL.trim()) return;
+
+    const formatted =
+      targetURL.startsWith("http://") || targetURL.startsWith("https://")
+        ? targetURL
+        : `https://${targetURL}`;
+
+    try {
+      const domain = new URL(formatted).hostname.toLowerCase();
+
+      const safeExt = [".com", ".co.id", ".my.id", ".id", ".go.id"];
+      const dangerExt = [".xyz", ".xxx", ".lol", ".icu", ".click"];
+
+      let status: "Safe" | "Danger" | "Warning" = "Warning";
+      let threat = "Suspicious Content";
+
+      if (safeExt.some((ext) => domain.endsWith(ext))) {
+        status = "Safe";
+        threat = "None";
+      } else if (dangerExt.some((ext) => domain.endsWith(ext))) {
+        status = "Danger";
+        threat = "Phishing Detected";
+      }
+
+      const newScan = {
+        url: formatted,
+        status,
+        threat,
+        time: "Just now",
+      };
+
+      // === FIX: Hilangkan duplikasi ===
+      let stored = JSON.parse(localStorage.getItem("recent_scans") || "[]");
+      const filtered = stored.filter((item: any) => item.url !== formatted);
+      const updated = [newScan, ...filtered];
+
+      localStorage.setItem("recent_scans", JSON.stringify(updated));
+
+      navigate(`/analysis?url=${encodeURIComponent(formatted)}`);
+    } catch (err) {
+      console.error("Invalid URL");
+    }
+  };
+
+  // Rescan handler
+  const handleRescan = (selectedURL: string) => {
+    setUrl(selectedURL);
+    handleCheck(selectedURL);
   };
 
   return (
@@ -47,6 +102,8 @@ export default function AntiPhishing() {
         </header>
 
         <div className="w-full text-white flex flex-col gap-6">
+
+          {/* Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               title="Safe URLs"
@@ -70,20 +127,24 @@ export default function AntiPhishing() {
             />
           </div>
 
-          <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4">
-            <label className="text-sm font-semibold">Masukkan URL</label>
+          {/* Input */}
+          <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4 ">
+            <label className="text-2xl font-semibold ">Analyze URL</label>
+            <p className="text-sm text-white-400">
+              Enter a URL to scan for potential phishing threats
+            </p>
 
             <div className="flex gap-3">
               <input
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://contoh.com"
+                placeholder="contoh.com"
                 className="flex-1 bg-white-400 border border-white-700 rounded-lg px-4 py-3 text-sm text-white"
               />
 
               <button
-                onClick={handleCheck}
+                onClick={() => handleCheck()}
                 className="flex items-center gap-2 bg-teal-400 hover:bg-teal-500 rounded-lg px-6 py-3 font-semibold text-white"
               >
                 <Search className="w-5 h-5" />
@@ -92,7 +153,9 @@ export default function AntiPhishing() {
             </div>
           </div>
 
-          <RecentScans />
+          {/* Recent Scans */}
+          <RecentScans onScan={handleRescan} />
+
         </div>
       </main>
     </div>
