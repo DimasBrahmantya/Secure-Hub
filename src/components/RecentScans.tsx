@@ -6,6 +6,8 @@ interface ScanItem {
   status: "Safe" | "Danger" | "Warning";
   threat: string;
   time: string;
+  blocked?: boolean;
+  reported?: boolean;
 }
 
 const defaultScans: ScanItem[] = [
@@ -41,19 +43,40 @@ const statusStyles = {
   Warning: "bg-yellow-900 text-yellow-300 border border-yellow-400/40",
 };
 
-export default function RecentScans() {
+export default function RecentScans({
+  onScan,
+}: {
+  onScan: (url: string) => void;
+}) {
   const [scans, setScans] = useState<ScanItem[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("recent_scans");
-    const parsed = stored ? JSON.parse(stored) : [];
+    const stored = JSON.parse(localStorage.getItem("recent_scans") || "[]");
+    const blocked = JSON.parse(localStorage.getItem("blocked_urls") || "[]");
+    const reported = JSON.parse(localStorage.getItem("reported_urls") || "[]");
 
-    // Gabungkan default + user scans
-    setScans([...parsed, ...defaultScans]);
+    // === FIX: Buat URL unik ===
+    const map = new Map();
+    const unique: ScanItem[] = [];
+
+    [...stored, ...defaultScans].forEach((item) => {
+      if (!map.has(item.url)) {
+        map.set(item.url, true);
+        unique.push(item);
+      }
+    });
+
+    const updated = unique.map((item) => ({
+      ...item,
+      blocked: blocked.includes(item.url),
+      reported: reported.includes(item.url),
+    }));
+
+    setScans(updated);
   }, []);
 
   return (
-    <div className="bg-[#2C2C2C] border border-black rounded-xl p-5 mt-6">
+    <div className="bg-[#2C2C2C] border border-black rounded-xl p-5 ">
       <h2 className="text-lg font-semibold text-white">Recent URL Scans</h2>
       <p className="text-sm text-gray-400 mb-4">
         Latest URLs analyzed by AI
@@ -77,7 +100,21 @@ export default function RecentScans() {
                 key={index}
                 className="text-gray-200 text-sm border-b border-gray-700/40"
               >
-                <td className="py-3">{item.url}</td>
+                <td className="py-3 flex items-center gap-2">
+                  {item.url}
+
+                  {item.blocked && (
+                    <span className="text-red-400 text-xs px-2 py-0.5 border border-red-400 rounded-md">
+                      ⛔ Blocked
+                    </span>
+                  )}
+
+                  {item.reported && (
+                    <span className="text-yellow-400 text-xs px-2 py-0.5 border border-yellow-400 rounded-md">
+                      ⚠ Reported
+                    </span>
+                  )}
+                </td>
 
                 <td className="py-3">
                   <span
@@ -93,15 +130,14 @@ export default function RecentScans() {
                 <td className="py-3">{item.time}</td>
 
                 <td className="py-3">
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => onScan(item.url)}
                     className="inline-flex items-center hover:text-gray-300 transition"
                   >
                     <ExternalLink className="w-5 h-5" />
-                  </a>
+                  </button>
                 </td>
+
               </tr>
             ))}
           </tbody>
