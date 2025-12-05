@@ -8,6 +8,8 @@
 # Kelas-NIM-Nama-Username github
 1. D-202210370311010-Dimas Brahmantya Aryasena-@DimasBrahmantya
 2. D-202210370311004-Wilda Amanda Aquari-@imthemuse23
+3. D-202210370311094-M. Heykal Dhafariel Rajendra-@mhdrajendra
+
 
 # 🎨 Desain
 Figma Prototype
