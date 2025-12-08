@@ -1,63 +1,68 @@
-// src/store/backupStore.ts
 import { create } from "zustand";
+// import { backupApi } from "../../api/backup";
+import * as backupApi from "../api/backup";
 
 export interface BackupItem {
   id: string;
   name: string;
   size: string;
-  createdAt: string; // ISO
-  status: "ready" | "restoring" | "restored" |"deleted";
+  createdAt: string;
+  status: "ready" | "restoring" | "restored" | "deleted";
 }
 
 interface BackupStore {
+  [x: string]: any;
   backups: BackupItem[];
-  addBackup: (item: BackupItem) => void;
-  removeBackup: (id: string) => void;
+  fetchBackups: () => Promise<void>;
+  generate: () => Promise<BackupItem>;
+  delete: (id: string) => Promise<void>;
+  restore: (file: File) => Promise<any>;
   updateBackup: (id: string, patch: Partial<BackupItem>) => void;
-  reset: () => void;
 }
 
-const STORAGE_KEY = "securehub_backups_v1";
+export const useBackupStore = create<BackupStore>((set, get) => ({
+  backups: [],
 
-const loadFromStorage = (): BackupItem[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as BackupItem[];
-  } catch {
-    return [];
-  }
-};
+  fetchBackups: async () => {
+    const data = await backupApi.getBackups();
+    set({
+      backups: data.map((x: any) => ({
+        id: x._id,
+        name: x.fileName,
+        size: `${(x.size / 1024).toFixed(2)} KB`,
+        createdAt: x.createdAt,
+        status: "ready",
+      })),
+    });
+  },
 
-const saveToStorage = (data: BackupItem[]) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {}
-};
+  generate: async () => {
+    const data = await backupApi.generateBackup();
 
-export const useBackupStore = create<BackupStore>((set, get) => {
-  const initial = loadFromStorage();
+    const item: BackupItem = {
+      id: data._id,
+      name: data.fileName,
+      size: `${(data.size / 1024).toFixed(2)} KB`,
+      createdAt: data.createdAt,
+      status: "ready",
+    };
 
-  return {
-    backups: initial,
-    addBackup: (item) => {
-      const next = [item, ...get().backups];
-      saveToStorage(next);
-      set({ backups: next });
-    },
-    removeBackup: (id) => {
-      const next = get().backups.filter((b) => b.id !== id);
-      saveToStorage(next);
-      set({ backups: next });
-    },
-    updateBackup: (id, patch) => {
-      const next = get().backups.map((b) => (b.id === id ? { ...b, ...patch } : b));
-      saveToStorage(next);
-      set({ backups: next });
-    },
-    reset: () => {
-      saveToStorage([]);
-      set({ backups: [] });
-    },
-  };
-});
+    set({ backups: [item, ...get().backups] });
+    return item;
+  },
+
+  delete: async (id: string) => {
+    await backupApi.deleteBackup(id);
+    set({ backups: get().backups.filter((b) => b.id !== id) });
+  },
+
+  restore: async (file: File) => {
+    return await backupApi.restoreBackup(file);
+  },
+
+  updateBackup: (id, patch) => {
+    set({
+      backups: get().backups.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+    });
+  },
+}));

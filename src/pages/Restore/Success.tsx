@@ -1,37 +1,56 @@
-// src/pages/restore/success.tsx
+// src/pages/restore/progress.tsx
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
-import { CheckCircle } from "lucide-react";
 import { useBackupStore } from "../../store/backupStore";
 
-export default function RestoreSuccess() {
-  const navigate = useNavigate();
+export default function RestoreProgress() {
   const location = useLocation();
+  const navigate = useNavigate();
   const id = (location.state as any)?.id as string | undefined;
-  const backups = useBackupStore((s) => s.backups);
-  const item = backups.find((b) => b.id === id);
+  const updateBackup = useBackupStore((s) => s.updateBackup);
+  const restoreBackup = useBackupStore(s => s.restoreBackup);
+
+
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!id) {
+      navigate("/backup");
+      return;
+    }
+
+    let total = 0;
+    const interval = setInterval(() => {
+      total += Math.floor(Math.random() * 12) + 15;
+      if (total > 100) total = 100;
+      setProgress(total);
+      if (total >= 100) {
+        clearInterval(interval);
+        restoreBackup(id);
+        setTimeout(() => navigate("/restore/success", { state: { id } }), 700);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [id, navigate, updateBackup]);
+
+  if (!id) return null;
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
       <Sidebar />
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-        <Header title="Restore Complete" subtitle="Backup restored successfully" onLogout={() => navigate("/login")} />
+        <Header title="Restore" subtitle="Restoring backup..." onLogout={() => navigate("/login")} />
 
         <div className="bg-[#2C2C2C] p-6 rounded-xl border border-black max-w-6xl">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-800 rounded-full">
-              <CheckCircle className="w-6 h-6 text-green-300" />
+          <p className="text-gray-300">Restoring backup... please wait</p>
+          <div className="mt-6">
+            <div className="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
+              <div style={{ width: `${progress}%` }} className="h-3 bg-teal-400 transition-all"></div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold">Restore Successful</h3>
-              <p className="text-gray-300 mt-1">{item ? `${item.name} restored` : "Backup restored"}</p>
-            </div>
-          </div>
-
-          <div className="mt-6 flex gap-3">
-            <button onClick={() => navigate("/backup")} className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold">
-              Back to backups</button>
+            <p className="mt-3 text-sm text-gray-300">{progress}%</p>
           </div>
         </div>
       </main>

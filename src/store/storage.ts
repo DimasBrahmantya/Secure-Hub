@@ -1,12 +1,10 @@
-// src/store/storage.ts
-
 export interface ScanData {
   url: string;
   status: "Safe" | "Danger" | "Warning";
   threat: string;
   time: string;
-  blocked?: boolean;   // ditandai jika user block
-  reported?: boolean;  // ditandai jika user report
+  blocked?: boolean;
+  reported?: boolean;
 }
 
 /* =============================
@@ -14,14 +12,34 @@ export interface ScanData {
 ============================= */
 
 export const getRecentScans = (): ScanData[] => {
-  const stored = localStorage.getItem("recent_scans");
-  return stored ? JSON.parse(stored) : [];
+  return JSON.parse(localStorage.getItem("recent_scans") || "[]");
 };
 
 export const saveRecentScans = (scans: ScanData[]) => {
   localStorage.setItem("recent_scans", JSON.stringify(scans));
 };
 
+/**
+ * SIMPAN SCAN BARU
+ * - Hapus yang lama jika URL sama
+ * - Simpan paling atas
+ */
+export const addOrReplaceScan = (scan: ScanData) => {
+  let scans = getRecentScans();
+
+  // hapus yang lama kalau ada URL sama
+  scans = scans.filter((s) => s.url !== scan.url);
+
+  // masukkan baru di paling atas
+  const updated = [scan, ...scans];
+
+  saveRecentScans(updated);
+};
+
+
+/**
+ * UPDATE STATUS BLOCK/REPORT
+ */
 export const updateScanStatus = (url: string, updates: Partial<ScanData>) => {
   const scans = getRecentScans();
   const idx = scans.findIndex((s) => s.url === url);
@@ -32,13 +50,13 @@ export const updateScanStatus = (url: string, updates: Partial<ScanData>) => {
   }
 };
 
+
 /* =============================
     BLOCKLIST
 ============================= */
 
 export const getBlocklist = (): string[] => {
-  const stored = localStorage.getItem("blocked_urls");
-  return stored ? JSON.parse(stored) : [];
+  return JSON.parse(localStorage.getItem("blocked_urls") || "[]");
 };
 
 export const blockURL = (url: string) => {
@@ -49,12 +67,8 @@ export const blockURL = (url: string) => {
     localStorage.setItem("blocked_urls", JSON.stringify(updated));
   }
 
-  // Update juga di recent scans → tandai blocked
+  // update recent scans
   updateScanStatus(url, { blocked: true });
-};
-
-export const isBlocked = (url: string): boolean => {
-  return getBlocklist().includes(url);
 };
 
 export const unblockURL = (url: string) => {
@@ -64,13 +78,15 @@ export const unblockURL = (url: string) => {
   updateScanStatus(url, { blocked: false });
 };
 
+export const isBlocked = (url: string) => getBlocklist().includes(url);
+
+
 /* =============================
     REPORT LIST
 ============================= */
 
 export const getReportList = (): string[] => {
-  const stored = localStorage.getItem("reported_urls");
-  return stored ? JSON.parse(stored) : [];
+  return JSON.parse(localStorage.getItem("reported_urls") || "[]");
 };
 
 export const reportURL = (url: string) => {
@@ -81,11 +97,7 @@ export const reportURL = (url: string) => {
     localStorage.setItem("reported_urls", JSON.stringify(updated));
   }
 
-  // Update recent scans juga
   updateScanStatus(url, { reported: true });
 };
 
-export const isReported = (url: string): boolean => {
-  return getReportList().includes(url);
-};
-
+export const isReported = (url: string) => getReportList().includes(url);

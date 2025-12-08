@@ -1,15 +1,12 @@
-// src/pages/backup/progress.tsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
-import { useBackupStore } from "../../store/backupStore";
 
 export default function BackupProgress() {
   const location = useLocation();
   const navigate = useNavigate();
   const id = (location.state as any)?.id as string | undefined;
-  const updateBackup = useBackupStore((s) => s.updateBackup);
 
   const [progress, setProgress] = useState(0);
 
@@ -21,19 +18,18 @@ export default function BackupProgress() {
 
     let total = 0;
     const interval = setInterval(() => {
-      total += Math.floor(Math.random() * 10) + 15; // random progress step
+      total += Math.floor(Math.random() * 10) + 15;
       if (total > 100) total = 100;
       setProgress(total);
       if (total >= 100) {
         clearInterval(interval);
-        // after complete, ensure status 'ready' (it was added as ready)
-        updateBackup(id, { status: "ready" });
+        // cukup kembali ke list — backend sudah membuat backup di /generate
         setTimeout(() => navigate("/backup"), 700);
       }
     }, 500);
 
     return () => clearInterval(interval);
-  }, [id, navigate, updateBackup]);
+  }, [id, navigate]);
 
   if (!id) return null;
 

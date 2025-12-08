@@ -1,15 +1,14 @@
-// src/pages/restore/progress.tsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
-import { useBackupStore } from "../../store/backupStore";
+import { restoreBackupByName } from "../../api/backup";
 
 export default function RestoreProgress() {
   const location = useLocation();
   const navigate = useNavigate();
   const id = (location.state as any)?.id as string | undefined;
-  const updateBackup = useBackupStore((s) => s.updateBackup);
+  const fileName = (location.state as any)?.fileName as string | undefined;
 
   const [progress, setProgress] = useState(0);
 
@@ -26,13 +25,21 @@ export default function RestoreProgress() {
       setProgress(total);
       if (total >= 100) {
         clearInterval(interval);
-        updateBackup(id, { status: "restored" });
-        setTimeout(() => navigate("/restore/success", { state: { id } }), 700);
+        (async () => {
+          if (fileName) {
+            try {
+              await restoreBackupByName(fileName);
+            } catch (e) {
+              console.error("restore by name failed", e);
+            }
+          }
+          setTimeout(() => navigate("/restore/success", { state: { id } }), 700);
+        })();
       }
     }, 500);
 
     return () => clearInterval(interval);
-  }, [id, navigate, updateBackup]);
+  }, [id, navigate, fileName]);
 
   if (!id) return null;
 
