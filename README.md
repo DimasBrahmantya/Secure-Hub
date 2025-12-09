@@ -24,15 +24,15 @@ https://drive.google.com/drive/folders/1OvfSio5g2r8UGBiSKM-M2YUx4BJ_HKnv?usp=sha
 | 1  | Setup Project & Struktur Folder | Inisialisasi project, konfigurasi library & environment | Dimas         | Medium | Done        |
 | 2  | Desain UI Warna & Style Guide   | Menentukan palette warna, typography, style komponen    | Wilda         | Medium | Done        |
 | 3  | Desain Low Fidelity             | Sketsa struktur tampilan awal aplikasi                  | Wilda         | Medium | Done        |
-| 4  | Desain High Fidelity (Figma)    | Finalisasi desain tampilan & interaksi                  | Wilda & Dimas | High   | Done        |
+| 4  | Desain High Fidelity (Figma)    | Finalisasi desain tampilan & interaksi                  | All Team  | High   | Done        |
 | 5  | Authentication (Register/Login) | Backend fitur autentikasi pengguna                      | Dimas         | High   | On Progress |
 | 6  | Implementasi UI Authentication  | Layout tampilan login dan register sesuai desain        | Wilda         | Medium | Done        |
 | 7  | Database & API                  | Pembuatan model, controller, dan endpoint API           | Dimas         | High   | On Progress |
-| 8  | Fitur Manajemen Pengguna        | CRUD profile pengguna & role                            | Dimas        | High   | On Progress |
-| 9  | Integrasi Frontend & Backend    |                 -                                       | Dimas & Wilda | High   | On Progress |
+| 8  | Fitur Manajemen Pengguna        | CRUD profile pengguna & role                            | Heykal        | High   | On Progress |
+| 9  | Integrasi Frontend & Backend    |                 -                                       | All Team | High   | On Progress |
 | 10 | Testing Fitur                   | Unit test & manual testing                              | Heykal        | Medium | On Progress |
 | 11 | Deployment                      |                 -                                       | Dimas         | High   | On Progress |
-| 12 | Dokumentasi & README            | Penyusunan dokumentasi dan presentasi                   | Wilda       | Low    | Planned     |
+| 12 | Dokumentasi & README            | Penyusunan dokumentasi dan presentasi                   | Heykal       | Low    | Planned     |
 
 
 
