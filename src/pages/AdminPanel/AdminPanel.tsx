@@ -1,6 +1,6 @@
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import FeatureCard from "../../components/FeatureCard";
 import Sidebar from "../../components/Sidebar";
 import StatCard from "../../components/StatCard";
 import {
@@ -23,10 +23,8 @@ interface DashboardStats {
     adminUsers: number;
   };
   system: {
-    lastBackup: string;
-    nextBackup: string;
-    aiSensitivity: string;
-    securityScore: string;
+    aiSensitivity: "-";
+    securityScore: "-";
   };
   reports: {
     totalReports: number;
@@ -47,8 +45,6 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     users: { totalUsers: 0, activeUsers: 0, adminUsers: 0 },
     system: {
-      lastBackup: "-",
-      nextBackup: "-",
       aiSensitivity: "-",
       securityScore: "-",
     },
@@ -92,12 +88,10 @@ export default function Dashboard() {
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-
       {/* SIDEBAR */}
       <Sidebar />
 
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-
         {/* HEADER */}
         <header className="flex justify-between items-start mb-10">
           <div className="flex flex-col gap-2">
@@ -129,8 +123,8 @@ export default function Dashboard() {
 
           <StatCard
             title="System Health"
-            value={`Last: ${stats.system.lastBackup}`}
-            subtitle={`Next: ${stats.system.nextBackup}`}
+            value={stats.system.securityScore}
+            subtitle={`AI Sensitivity: ${stats.system.aiSensitivity}`}
             icon={<Server className="w-10 h-10 text-green-500" />}
           />
 
@@ -149,70 +143,43 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* MIDDLE SECTIONS */}
+        {/* FEATURE CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-          
-          {/* USER MANAGEMENT */}
-          <div className="bg-[#2c2c2c] rounded-xl p-6">
-            <h3 className="text-xl font-semibold flex items-center gap-2 text-white">
-              <UserCog className="w-6 h-6 text-yellow-500" />
-              User Management
-            </h3>
-            <p className="text-gray-300 mt-1">
-              Manage user accounts, roles, and permissions
-            </p>
+          <FeatureCard
+            icon={<UserCog className="w-8 h-8 text-yellow-500" />}
+            title="User Management"
+            description="Manage user accounts, roles, and permissions"
+            stats={[
+              {
+                label: "Active Users",
+                value: stats.users.activeUsers.toString(),
+              },
+              {
+                label: "Admin Users",
+                value: stats.users.adminUsers.toString(),
+              },
+            ]}
+            buttonText="Manage Users"
+            navigateTo="/users"
+          />
 
-            <div className="flex justify-between mt-6 text-gray-200">
-              <div>
-                <p className="text-sm">Active Users</p>
-                <p className="font-semibold text-lg">{stats.users.activeUsers}</p>
-              </div>
-              <div>
-                <p className="text-sm">Admin Users</p>
-                <p className="font-semibold text-lg">{stats.users.adminUsers}</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => navigate("/users")}
-              className="w-full bg-teal-400 hover:bg-teal-500 mt-6 py-3 rounded-lg font-semibold text-white"
-            >
-              Manage Users
-            </button>
-          </div>
-
-          {/* STATISTICS */}
-          <div className="bg-[#2c2c2c] rounded-xl p-6">
-            <h3 className="text-xl font-semibold flex items-center gap-2 text-white">
-              <BarChart2 className="w-6 h-6 text-green-500" />
-              Statistics & Report
-            </h3>
-            <p className="text-gray-300 mt-1">
-              View detailed analytics and phishing reports
-            </p>
-
-            <div className="flex justify-between mt-6 text-gray-200">
-              <div>
-                <p className="text-sm">Total Reports</p>
-                <p className="font-semibold text-lg">
-                  {stats.reports.totalReports}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm">Threats Blocked</p>
-                <p className="font-semibold text-lg">
-                  {stats.reports.threatsBlocked}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => navigate("/statistics")}
-              className="w-full bg-teal-400 hover:bg-teal-500 mt-6 py-3 rounded-lg font-semibold text-white"
-            >
-              View Statistics
-            </button>
-          </div>
+          <FeatureCard
+            icon={<BarChart2 className="w-8 h-8 text-green-500" />}
+            title="Statistics & Report"
+            description="View analytics and security reports"
+            stats={[
+              {
+                label: "Total Reports",
+                value: stats.reports.totalReports.toString(),
+              },
+              {
+                label: "Threats Blocked",
+                value: stats.reports.threatsBlocked.toString(),
+              },
+            ]}
+            buttonText="View Statistics"
+            navigateTo="/statistics"
+          />
         </div>
 
         {/* RECENT ADMIN ACTIONS */}

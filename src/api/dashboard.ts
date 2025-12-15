@@ -11,3 +11,9 @@ export async function getDashboardActivity() {
   const res = await fetch(`${BASE_URL}/dashboard/activity`);
   return res.json();
 }
+
+export const getDashboardOverview = async () => {
+  const res = await fetch("http://localhost:3000/dashboard/overview");
+  return res.json();
+};
+

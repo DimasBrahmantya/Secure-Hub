@@ -187,10 +187,10 @@ export default function UserManagement() {
       {/* ===================== DELETE POPUP ===================== */}
       {confirmDelete !== null && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
-            <h2 className="text-xl font-semibold mb-3">Delete User?</h2>
+          <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
+            <h2 className="text-xl font-semibold mb-3 text-white">Delete User?</h2>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-white-800 mb-6">
               Yakin ingin menghapus user dengan ID {confirmDelete}?
             </p>
 
