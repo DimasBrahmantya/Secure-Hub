@@ -1,51 +1,95 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/Sidebar";
 import StatCard from "../../components/StatCard";
 import UserRow from "../../components/UserRow";
 import { Users, UserMinus, LogOut, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+interface UserItem {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  password: string;
+}
+
 export default function UserManagement() {
   const navigate = useNavigate();
   const handleLogout = () => navigate("/login");
 
-  const usersData = [
-    { id: 1, name: "Dimas", role: "Admin", status: "active" },
-    { id: 2, name: "Budi", role: "User", status: "active" },
-    { id: 3, name: "Santi", role: "User", status: "inactive" },
-  ];
+  // ================== LOAD USERS ==================
+  const [users, setUsers] = useState<UserItem[]>([]);
 
-  const [users, setUsers] = useState(usersData);
+  useEffect(() => {
+    const stored = localStorage.getItem("securehub_users");
 
-  // DELETE POPUP
+    if (stored) {
+      setUsers(JSON.parse(stored));
+    } else {
+      const defaultUsers = [
+        { id: 1, name: "Dimas", email: "dimas@example.com", role: "Admin", status: "active", password: "123456" },
+        { id: 2, name: "Budi", email: "budi@example.com", role: "User", status: "active", password: "123456" },
+        { id: 3, name: "Santi", email: "santi@example.com", role: "User", status: "inactive", password: "123456" },
+      ];
+      setUsers(defaultUsers);
+      localStorage.setItem("securehub_users", JSON.stringify(defaultUsers));
+    }
+  }, []);
+
+  const saveUsers = (updated: UserItem[]) => {
+    setUsers(updated);
+    localStorage.setItem("securehub_users", JSON.stringify(updated));
+  };
+
+  // ================== DELETE POPUP ==================
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   const deleteUser = () => {
     if (confirmDelete !== null) {
-      setUsers((prev) => prev.filter((u) => u.id !== confirmDelete));
+      const updated = users.filter((u) => u.id !== confirmDelete);
+      saveUsers(updated);
       setConfirmDelete(null);
     }
   };
 
-  // ADD USER POPUP
+  // ================== ADD USER POPUP ==================
   const [showAddUser, setShowAddUser] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState("User");
+  const [newPassword, setNewPassword] = useState("");
 
   const addUser = () => {
-    if (newName.trim() === "") return;
+    if (!newName.trim() || !newEmail.trim() || !newPassword.trim()) return;
 
-    const newUser = {
+    const newUser: UserItem = {
       id: users.length + 1,
       name: newName,
+      email: newEmail,
       role: newRole,
       status: "active",
+      password: newPassword, // saved but not shown
     };
 
-    setUsers((prev) => [...prev, newUser]);
+    saveUsers([...users, newUser]);
+
     setShowAddUser(false);
     setNewName("");
+    setNewEmail("");
     setNewRole("User");
+    setNewPassword("");
+  };
+
+  // ================== EDIT USER POPUP ==================
+  const [editUser, setEditUser] = useState<UserItem | null>(null);
+
+  const updateUser = () => {
+    if (!editUser) return;
+
+    const updated = users.map((u) => (u.id === editUser.id ? editUser : u));
+    saveUsers(updated);
+    setEditUser(null);
   };
 
   return (
@@ -55,16 +99,11 @@ export default function UserManagement() {
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
         <header className="flex justify-between items-start mb-10">
           <div className="flex flex-col gap-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              User Management
-            </h1>
-            <p className="text-lg text-gray-700">
-              Manage user accounts and permissions
-            </p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">User Management</h1>
+            <p className="text-lg text-gray-700">Manage user accounts and permissions</p>
           </div>
 
           <div className="flex gap-3">
-            {/* ADD USER */}
             <button
               onClick={() => setShowAddUser(true)}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -73,7 +112,6 @@ export default function UserManagement() {
               <span className="font-semibold">Add User</span>
             </button>
 
-            {/* LOGOUT */}
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
@@ -106,11 +144,13 @@ export default function UserManagement() {
           />
         </div>
 
-        <table className="w-full mt-10 bg-[#2C2C2C] rounded-xl border border-black">
+        {/* TABLE */}
+        <table className="w-full mt-10 bg-[#2C2C2C] rounded-xl overflow-hidden border border-black">
           <thead>
             <tr className="bg-black text-white">
               <th className="p-3 text-left">ID</th>
               <th className="p-3 text-left">Name</th>
+              <th className="p-3 text-left">Email</th>
               <th className="p-3 text-left">Role</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Actions</th>
@@ -121,11 +161,9 @@ export default function UserManagement() {
             {users.map((u) => (
               <UserRow
                 key={u.id}
-                id={u.id}
-                name={u.name}
-                role={u.role}
-                status={u.status}
+                user={u}
                 onDelete={() => setConfirmDelete(u.id)}
+                onEdit={() => setEditUser(u)}
               />
             ))}
           </tbody>
@@ -167,16 +205,34 @@ export default function UserManagement() {
           <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
             <h2 className="text-xl font-semibold mb-3">Add New User</h2>
 
-            <label className="text-white-700 font-medium">Name</label>
+            <label className="text-white font-medium">Name</label>
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               className="w-full p-2 border rounded mb-4 mt-1"
-              placeholder="Enter user name"
+              placeholder="Enter name"
             />
 
-            <label className="text--700 font-medium">Role</label>
+            <label className="text-white font-medium">Email</label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              className="w-full p-2 border rounded mb-4 mt-1"
+              placeholder="Enter email"
+            />
+
+            <label className="text-white font-medium">Password</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full p-2 border rounded mb-6 mt-1"
+              placeholder="Enter password"
+            />
+
+            <label className="text-white font-medium">Role</label>
             <select
               value={newRole}
               onChange={(e) => setNewRole(e.target.value)}
@@ -189,7 +245,7 @@ export default function UserManagement() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowAddUser(false)}
-                className="px-4 py-2 rounded-lg bg-red hover:bg-red-400 transition"
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
               >
                 Cancel
               </button>
@@ -205,7 +261,79 @@ export default function UserManagement() {
         </div>
       )}
 
-      {/* ===================== ANIMATIONS (NO GLOBAL.CSS) ===================== */}
+      {/* ===================== EDIT USER POPUP ===================== */}
+      {editUser && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
+            <h2 className="text-xl font-semibold mb-3">Edit User</h2>
+
+            <label className="text-white font-medium">Name</label>
+            <input
+              type="text"
+              value={editUser.name}
+              onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
+              className="w-full p-2 border rounded mb-4 mt-1"
+            />
+
+            <label className="text-white font-medium">Email</label>
+            <input
+              type="email"
+              value={editUser.email}
+              onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
+              className="w-full p-2 border rounded mb-4 mt-1"
+            />
+
+            <label className="text-white font-medium">Password (new)</label>
+            <input
+              type="password"
+              value={editUser.password}
+              onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
+              className="w-full p-2 border rounded mb-4 mt-1"
+              placeholder="Enter new password"
+            />
+
+            <label className="text-white font-medium">Role</label>
+            <select
+              value={editUser.role}
+              onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+              className="w-full p-2 border rounded mb-4 mt-1 bg-[#2c2c2c] text-white"
+            >
+              <option value="Admin">Admin</option>
+              <option value="User">User</option>
+            </select>
+
+            <label className="text-white font-medium">Status</label>
+            <select
+              value={editUser.status}
+              onChange={(e) =>
+                setEditUser({ ...editUser, status: e.target.value })
+              }
+              className="w-full p-2 border rounded mb-6 mt-1 bg-[#2c2c2c] text-white"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setEditUser(null)}
+                className="px-3 py-1 rounded-lg bg-red-700 text-white hover:bg-red-800 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={updateUser}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== ANIMATIONS ===================== */}
       <style>{`
         .animate-fadeIn {
           animation: fadeIn 0.25s ease-out;

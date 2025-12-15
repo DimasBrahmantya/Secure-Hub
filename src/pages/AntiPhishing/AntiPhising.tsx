@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LogOut,
   CheckCircle,
@@ -17,16 +17,52 @@ export default function AntiPhishing() {
     status: "Safe" | "Danger" | "Warning";
     threat: string;
     time: string;
+    blocked?: boolean;
+    reported?: boolean;
   };
 
   const [url, setUrl] = useState("");
+  const [stats, setStats] = useState({
+    safe: 0,
+    warning: 0,
+    danger: 0,
+    blocked: 0,
+  });
+
   const navigate = useNavigate();
 
   const handleLogout = () => navigate("/login");
 
-  const handleCheck = (manualURL?: string) => {
-    const targetURL = manualURL ?? url;
+  // ========================== FETCH STATISTICS ==========================
+  const loadStats = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/phishing");
+      const data: Scan[] = await res.json();
 
+      if (!Array.isArray(data)) return;
+
+      const safe = data.filter((i) => i.status === "Safe").length;
+      const warning = data.filter((i) => i.status === "Warning").length;
+      const danger = data.filter((i) => i.status === "Danger").length;
+      const blocked = data.filter((i) => i.blocked === true).length;
+
+      setStats({ safe, warning, danger, blocked });
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  // Trigger refresh stats setiap ada block/report/rescan
+  const refreshAfterAction = () => {
+    loadStats();
+  };
+
+  const handleCheck = async (manualURL?: string) => {
+    const targetURL = manualURL ?? url;
     if (!targetURL.trim()) return;
 
     const formatted =
@@ -35,43 +71,20 @@ export default function AntiPhishing() {
         : `https://${targetURL}`;
 
     try {
-      const domain = new URL(formatted).hostname.toLowerCase();
+      await fetch("http://localhost:3000/phishing/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: formatted }),
+      });
 
-      const safeExt = [".com", ".co.id", ".my.id", ".id", ".go.id"];
-      const dangerExt = [".xyz", ".xxx", ".lol", ".icu", ".click"];
-
-      let status: "Safe" | "Danger" | "Warning" = "Warning";
-      let threat = "Suspicious Content";
-
-      if (safeExt.some((ext) => domain.endsWith(ext))) {
-        status = "Safe";
-        threat = "None";
-      } else if (dangerExt.some((ext) => domain.endsWith(ext))) {
-        status = "Danger";
-        threat = "Phishing Detected";
-      }
-
-      const newScan = {
-        url: formatted,
-        status,
-        threat,
-        time: "Just now",
-      };
-
-      // === FIX: Hilangkan duplikasi ===
-      let stored = JSON.parse(localStorage.getItem("recent_scans") || "[]");
-      const filtered = stored.filter((item: any) => item.url !== formatted);
-      const updated = [newScan, ...filtered];
-
-      localStorage.setItem("recent_scans", JSON.stringify(updated));
+      refreshAfterAction();
 
       navigate(`/analysis?url=${encodeURIComponent(formatted)}`);
     } catch (err) {
-      console.error("Invalid URL");
+      console.error("Scan failed:", err);
     }
   };
 
-  // Rescan handler
   const handleRescan = (selectedURL: string) => {
     setUrl(selectedURL);
     handleCheck(selectedURL);
@@ -102,32 +115,31 @@ export default function AntiPhishing() {
         </header>
 
         <div className="w-full text-white flex flex-col gap-6">
-
-          {/* Cards */}
+          {/* ========================== STAT CARDS ========================== */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               title="Safe URLs"
-              value="156"
-              subtitle="This Week"
+              value={String(stats.safe)}
+              subtitle="Total Scanned"
               icon={<CheckCircle className="w-8 h-8 text-teal-400" />}
             />
 
             <StatCard
               title="Suspicious"
-              value="8"
-              subtitle="This Week"
+              value={String(stats.warning)}
+              subtitle="Total Scanned"
               icon={<TriangleAlert className="w-8 h-8 text-yellow-400" />}
             />
 
             <StatCard
               title="Threats Blocked"
-              value="23"
-              subtitle="This Week"
+              value={String(stats.blocked)}
+              subtitle="Total Blocked URLs"
               icon={<Shield className="w-8 h-8 text-red-400" />}
             />
           </div>
 
-          {/* Input */}
+          {/* ========================== URL INPUT ========================== */}
           <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4 ">
             <label className="text-2xl font-semibold ">Analyze URL</label>
             <p className="text-sm text-white-400">
@@ -153,9 +165,13 @@ export default function AntiPhishing() {
             </div>
           </div>
 
-          {/* Recent Scans */}
-          <RecentScans onScan={handleRescan} />
-
+          {/* ========================== RECENT SCANS ========================== */}
+          <RecentScans
+            onScan={(url: string) => {
+              handleRescan(url);
+              refreshAfterAction();
+            }}
+          />
         </div>
       </main>
     </div>

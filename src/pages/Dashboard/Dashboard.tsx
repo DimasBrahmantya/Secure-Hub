@@ -1,147 +1,160 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar";
-import StatCard from "../../components/StatCard";
-import RecentActivity from "../../components/RecentActivity";
-import FeatureCard from "../../components/FeatureCard";
-import {
-  CheckCircle,
-  Database,
-  Shield,
-  Activity,
-  TrendingUp,
-  LogOut,
-} from "lucide-react";
 
-export default function Dashboard() {
+import Sidebar from "../../components/Sidebar";
+import Header from "../../components/Header";
+import StatCard from "../../components/StatCard";
+
+import {
+  getBackups,
+  generateBackup,
+  deleteBackup,
+  restoreBackup,
+} from "../../api/backup";
+
+import { Trash2, UploadCloud, Database } from "lucide-react";
+
+function formatAgo(iso: string) {
+  const then = new Date(iso).getTime();
+  const diff = Date.now() - then;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hrs ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} days ago`;
+}
+
+export default function BackupIndex() {
   const navigate = useNavigate();
 
-  const handleLogout = () => navigate("/login");
+  const [backups, setBackups] = useState<any[]>([]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const stats = [
-    {
-      title: "Security Status",
-      value: "Protected",
-      subtitle: "All systems operational",
-      icon: <CheckCircle className="w-6 h-6 text-teal-400" strokeWidth={2.5} />,
-    },
-    {
-      title: "Last Backup",
-      value: "2 hours ago",
-      subtitle: "Next backup in 22 hours",
-      icon: <Database className="w-7 h-7 text-orange-500" />,
-    },
-    {
-      title: "Threats Blocked",
-      value: "127",
-      subtitle: "This week",
-      icon: <Shield className="w-7 h-7 text-red-600" />,
-    },
-    {
-      title: "Active Monitoring",
-      value: "24/7",
-      subtitle: "Real-time protection",
-      icon: <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} />,
-    },
-  ];
+  const load = async () => {
+    const data = await getBackups();
+    setBackups(data);
+  };
 
-  const features = [
-    {
-      icon: <Shield className="w-8 h-8 text-red-600" />,
-      title: "Anti-Phishing Protection",
-      description: "AI-powered threat detection and prevention",
-      stats: [
-        { label: "URLs Analyzed Today", value: "48" },
-        { label: "Threats Detected", value: "3" },
-      ],
-      buttonText: "Go to Anti-Phising",
-      navigateTo: "/antiphishing",
-    },
-    {
-      icon: <Database className="w-7 h-7 text-orange-500" />,
-      title: "Backup & Restore",
-      description: "Secure data backup and recovery",
-      stats: [
-        { label: "Total Backups", value: "156" },
-        { label: "Storage Used", value: "45.2 GB" },
-      ],
-      buttonText: "Manage Backup",
-      navigateTo: "/backup",
-    },
-    {
-      icon: <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} />,
-      title: "System Monitoring",
-      description: "Real-time activity logs and alerts",
-      stats: [
-        { label: "Active Sessions", value: "12" },
-        { label: "Pending Alert", value: "2" },
-      ],
-      buttonText: "View Notifications",
-      navigateTo: "/monitoring",
-    },
-    {
-      icon: <TrendingUp className="w-8 h-8 text-green-500" strokeWidth={3} />,
-      title: "Admin Panel",
-      description: "System configuration and management",
-      stats: [
-        { label: "Total Users", value: "24" },
-        { label: "AI Sensitivity", value: "High" },
-      ],
-      buttonText: "Admin Panel",
-      navigateTo: "/admin",
-    },
-  ];
+  useEffect(() => {
+    load();
+  }, []);
+
+  const handleCreateBackup = async () => {
+    const result = await generateBackup();
+    await load();
+    navigate("/backup/progress", { state: { id: result._id } });
+  };
+
+  const handleRestore = async (file: File) => {
+    await restoreBackup(file);
+    alert("Database restored!");
+  };
+
+  const handleDelete = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+
+    await deleteBackup(confirmDeleteId);
+    await load();
+
+    setConfirmDeleteId(null);
+    navigate("/delete/success");
+  };
+
+  const totalBackups = backups.length;
+  const latestBackup = backups[0]?.size
+    ? `${(backups[0].size / 1024).toFixed(2)} KB`
+    : "0 KB";
+  const readyCount = totalBackups;
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
       <Sidebar />
 
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-        <header className="flex justify-between items-start mb-8">
-          <div className="flex flex-col gap-3">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Security Dashboard
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-700">
-              Monitor and manage your security infrastructure
-            </p>
-          </div>
+        <Header
+          title="Backup & Restore"
+          subtitle="Manage data backups"
+          onLogout={() => navigate("/login")}
+        />
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <StatCard
+            title="Total Backups"
+            value={String(totalBackups)}
+            subtitle="All stored backups"
+            icon={<Database className="w-10 h-10 text-orange-500" />}
+          />
+
+          <StatCard
+            title="Latest Backup Size"
+            value={latestBackup}
+            subtitle="Most recent file"
+            icon={<UploadCloud className="w-10 h-10 text-blue-500" />}
+          />
+
+          <StatCard
+            title="Ready Backups"
+            value={String(readyCount)}
+            subtitle="Available to restore"
+            icon={<Database className="w-10 h-10 text-orange-500" />}
+          />
+        </div>
+
+        <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black mb-6 mt-10 flex flex-col gap-4">
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80 transition-opacity"
+            onClick={handleCreateBackup}
+            className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold"
           >
-            <LogOut className="w-6 h-6" />
-            <span className="font-semibold">Logout</span>
+            <UploadCloud className="w-5 h-5 text-blue-500" /> Backup Now
           </button>
-        </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat, idx) => (
-            <StatCard
-              key={idx}
-              title={stat.title}
-              value={stat.value}
-              subtitle={stat.subtitle}
-              icon={stat.icon}
+          <label className="block">
+            <p className="text-white text-sm mt-2">Restore Database:</p>
+            <input
+              type="file"
+              onChange={(e) => handleRestore(e.target.files![0])}
+              className="text-white"
             />
-          ))}
-        </section>
+          </label>
+        </div>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {features.map((feature, idx) => (
-            <FeatureCard
-              key={idx}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              stats={feature.stats}
-              buttonText={feature.buttonText}
-              navigateTo={feature.navigateTo}
-            />
-          ))}
-        </section>
-
-        <RecentActivity />
+        <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black">
+          <table className="w-full text-left">
+            <tbody>
+              {backups.map((b) => (
+                <tr key={b._id} className="text-white">
+                  <td className="py-3">{b.fileName}</td>
+                  <td className="py-3">
+                    {(b.size / 1024).toFixed(2)} KB
+                  </td>
+                  <td className="py-3">{formatAgo(b.createdAt)}</td>
+                  <td className="py-3">
+                    <a
+                      href={`http://localhost:3000/backup/download/${b.fileName}`}
+                      className="px-3 py-1 rounded bg-[#5CC8BA] text-white"
+                    >
+                      Download
+                    </a>
+                  </td>
+                  <td className="py-3">
+                    <button
+                      onClick={() => handleDelete(b._id)}
+                      className="px-3 py-1 rounded bg-red-700 text-white"
+                    >
+                      <Trash2 className="w-4 h-4 inline-block" /> Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </main>
     </div>
   );
