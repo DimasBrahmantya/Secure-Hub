@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import StatCard from "../../components/StatCard";
 import NotificationItem from "../../components/NotificationItem";
@@ -11,10 +12,30 @@ import {
 import { useNavigate } from "react-router-dom";
 
 export default function Monitoring() {
+  const navigate = useNavigate();
+  const handleLogout = () => navigate("/login");
 
-    const navigate = useNavigate();
-    const handleLogout = () => navigate("/login");
+  const [activities, setActivities] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
+  // ===============================
+  // FETCH MONITORING LOGS
+  // ===============================
+  const fetchMonitoring = () => {
+    fetch("http://localhost:3000/monitoring")
+      .then((res) => res.json())
+      .then((data) => {
+        setActivities(data.filter((d: any) => d.type === "activity"));
+        setNotifications(data.filter((d: any) => d.type === "notification"));
+      })
+      .catch((err) => console.error("Monitoring fetch error:", err));
+  };
+
+  useEffect(() => {
+    fetchMonitoring();
+    const interval = setInterval(fetchMonitoring, 5000); // auto refresh
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
@@ -52,14 +73,14 @@ export default function Monitoring() {
 
           <StatCard
             title="Pending Alerts"
-            value="2"
+            value={notifications.length.toString()}
             subtitle="Require Attention"
             icon={<AlertTriangle className="text-red-500 w-10 h-10" />}
           />
 
           <StatCard
             title="Events Today"
-            value="48"
+            value={activities.length.toString()}
             subtitle="Security events logged"
             icon={<CalendarCheck className="text-yellow-500 w-10 h-10" />}
           />
@@ -69,81 +90,53 @@ export default function Monitoring() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10">
           {/* LEFT COLUMN: ACTIVITY LOG */}
           <div className="col-span-2 bg-[#2c2c2c] border border-black rounded-xl p-5 flex flex-col gap-4">
-            <h2 className="text-xl font-bold text-white-900 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Activity className="w-6 h-6 text-blue-500" />
               Activity Log
             </h2>
-            <p className="text-sm text-white-600">
+            <p className="text-sm text-gray-300">
               Real-time security events and system activities.
             </p>
 
             <div className="flex flex-col gap-4 mt-2 border-t border-white-700 pt-4 max-h-[400px] overflow-y-auto">
-              <NotificationItem
-                title="Backup Completed"
-                message="Full system backup successful"
-                time="2 hours ago"
-              />
-
-              <NotificationItem
-                title="Suspicious URL Detected"
-                message="AI flagged potential phishing attempt"
-                time="3 hours ago"
-              />
-
-              <NotificationItem
-                title="System Scan"
-                message="Routine security scan completed"
-                time="1 day ago"
-              />
-
-              <NotificationItem
-                title="Security Update"
-                message="Policy rules updated successfully"
-                time="2 days ago"
-              />
-
-              <NotificationItem
-                title="Login Attempt"
-                message="Login from unknown location"
-                time="10 hours ago"
-              />
-
-              <NotificationItem
-                title="Data Sync"
-                message="Cloud synchronization completed"
-                time="5 days ago"
-              />
+              {activities.length === 0 ? (
+                <p className="text-gray-400 text-sm">No activity found.</p>
+              ) : (
+                activities.map((item: any) => (
+                  <NotificationItem
+                    key={item._id}
+                    title={item.title}
+                    message={item.message}
+                    time={new Date(item.time).toLocaleString()}
+                  />
+                ))
+              )}
             </div>
           </div>
 
           {/* RIGHT COLUMN: NOTIFICATIONS */}
-          <div className="w-full bg-[#2c2c2c] border-t border-white rounded-xl p-5 flex flex-col gap-5">
-            <h2 className="text-xl font-bold flex items-center gap-2">
+          <div className="w-full bg-[#2c2c2c] border border-black rounded-xl p-5 flex flex-col gap-5">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-white">
               <Bell className="w-6 h-6 text-red-500" />
               Notifications
             </h2>
-            <p className="text-sm text-white-600">
+            <p className="text-sm text-gray-300">
               Important alerts and updates
             </p>
 
             <div className="flex flex-col gap-4 mt-2 border-t border-white-700 pt-4 max-h-[400px] overflow-y-auto">
-              <NotificationItem
-                title="High Risk URL Detected"
-                message="Review and take action immediately."
-                time="2 minutes ago"
-              />
-
-              <NotificationItem
-                title="Scheduled Backup"
-                message="Next backup in 2 hours"
-                time="—"
-              />
-
-              <NotificationItem
-                title="Security Score Improved"
-                message="Your security rating increased to 95%."
-                time="Yesterday"
-              />
+              {notifications.length === 0 ? (
+                <p className="text-gray-400 text-sm">No notifications available.</p>
+              ) : (
+                notifications.map((item: any) => (
+                  <NotificationItem
+                    key={item._id}
+                    title={item.title}
+                    message={item.message}
+                    time={new Date(item.time).toLocaleString()}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>

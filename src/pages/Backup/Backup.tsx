@@ -1,17 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import StatCard from "../../components/StatCard";
-
 import {
-  getBackups,
   generateBackup,
   deleteBackup,
-  restoreBackup,
+  getBackups,
 } from "../../api/backup";
-
 import { Trash2, UploadCloud, Database } from "lucide-react";
 
 function formatAgo(iso: string) {
@@ -31,6 +27,7 @@ export default function BackupIndex() {
 
   const [backups, setBackups] = useState<any[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [backupFile, setBackupFile] = useState<File | null>(null);
 
   // ===============================
   // LOAD BACKUPS FROM BACKEND
@@ -47,18 +44,26 @@ export default function BackupIndex() {
   // ===============================
   // CREATE BACKUP
   // ===============================
-  const handleCreateBackup = async () => {
-    const result = await generateBackup();
-    await load();
-    navigate("/backup/progress", { state: { id: result._id } });
-  };
+  const handleCreateBackup = async (file: File) => {
+    try {
+      const result = await generateBackup(file);
 
-  // ===============================
-  // RESTORE BACKUP
-  // ===============================
-  const handleRestore = async (file: File) => {
-    await restoreBackup(file);
-    alert("Database restored!");
+      console.log("BACKUP RESULT:", result);
+
+      if (!result?._id) {
+        alert("Backup failed");
+        return;
+      }
+
+      await load();
+
+      navigate("/backup/progress", {
+        state: { id: result._id },
+      });
+    } catch (err) {
+      console.error("Backup error:", err);
+      alert("Backup failed");
+    }
   };
 
   // ===============================
@@ -134,21 +139,32 @@ export default function BackupIndex() {
             </div>
           </div>
 
+          {/* === FILE INPUT UNTUK BACKUP === */}
+          <label className="block">
+            <p className="text-white text-sm mb-1">
+              Upload Backup File (.zip):
+            </p>
+            <input
+              type="file"
+              accept=".zip"
+              onChange={(e) => setBackupFile(e.target.files?.[0] || null)}
+              className="text-white"
+            />
+          </label>
+
+          {/* === BACKUP NOW === */}
           <button
-            onClick={handleCreateBackup}
+            onClick={() => {
+              if (!backupFile) {
+                alert("Pilih file backup terlebih dahulu");
+                return;
+              }
+              handleCreateBackup(backupFile);
+            }}
             className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold"
           >
             <UploadCloud className="w-5 h-5 text-blue-500" /> Backup Now
           </button>
-
-          <label className="block">
-            <p className="text-white text-sm mt-2">Restore Database:</p>
-            <input
-              type="file"
-              onChange={(e) => handleRestore(e.target.files![0])}
-              className="text-white"
-            />
-          </label>
         </div>
 
         {/* ===== BACKUP TABLE ===== */}
@@ -179,22 +195,25 @@ export default function BackupIndex() {
                   className="text-white border-b border-gray-700/40"
                 >
                   <td className="py-3">{b.fileName}</td>
-                  <td className="py-3">
-                    {(b.size / 1024).toFixed(2)} KB
-                  </td>
+                  <td className="py-3">{(b.size / 1024).toFixed(2)} KB</td>
                   <td className="py-3 text-gray-300">
                     {formatAgo(b.createdAt)}
                   </td>
-                  <td className="py-3 capitalize">ready</td>
+                  <td className="py-3 capitalize">{b.status}</td>
 
-                  <td className="py-3">
+                  <td className="py-3 capitalize">
+                    {b.status === "ready"}
                     <div className="flex gap-2">
-                      <a
-                        href={`http://localhost:3000/backup/download/${b.fileName}`}
+                      <button
+                        onClick={() =>
+                          navigate("/restore/progress", {
+                            state: { id: b._id, fileName: b.fileName },
+                          })
+                        }
                         className="px-3 py-1 rounded bg-[#5CC8BA] text-white font-semibold"
                       >
-                        Download
-                      </a>
+                        Restore
+                      </button>
 
                       <button
                         onClick={() => handleDelete(b._id)}

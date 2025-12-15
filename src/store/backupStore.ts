@@ -1,63 +1,38 @@
-// src/store/backupStore.ts
 import { create } from "zustand";
+import * as backupApi from "../api/backup";
 
-export interface BackupItem {
-  id: string;
-  name: string;
-  size: string;
-  createdAt: string; // ISO
-  status: "ready" | "restoring" | "restored" |"deleted";
+interface BackupItem {
+  _id: string;
+  fileName: string;
+  size: number;
+  createdAt: string;
+  status?: "ready" | "restored";
 }
 
 interface BackupStore {
   backups: BackupItem[];
-  addBackup: (item: BackupItem) => void;
-  removeBackup: (id: string) => void;
-  updateBackup: (id: string, patch: Partial<BackupItem>) => void;
-  reset: () => void;
+  fetchBackups: () => Promise<void>;
+  restoreByName: (fileName: string) => Promise<void>;
 }
 
-const STORAGE_KEY = "securehub_backups_v1";
+export const useBackupStore = create<BackupStore>((set) => ({
+  backups: [],
 
-const loadFromStorage = (): BackupItem[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as BackupItem[];
-  } catch {
-    return [];
-  }
-};
+  fetchBackups: async () => {
+    const data = await backupApi.getBackups();
+    set({ backups: data });
+  },
 
-const saveToStorage = (data: BackupItem[]) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {}
-};
+  restoreByName: async (fileName: string) => {
+    await backupApi.restoreBackupByName(fileName);
 
-export const useBackupStore = create<BackupStore>((set, get) => {
-  const initial = loadFromStorage();
+    set((state) => ({
+      backups: state.backups.map((b) =>
+        b.fileName === fileName
+          ? { ...b, status: "restored" }
+          : b
+      ),
+    }));
+  },
+}));
 
-  return {
-    backups: initial,
-    addBackup: (item) => {
-      const next = [item, ...get().backups];
-      saveToStorage(next);
-      set({ backups: next });
-    },
-    removeBackup: (id) => {
-      const next = get().backups.filter((b) => b.id !== id);
-      saveToStorage(next);
-      set({ backups: next });
-    },
-    updateBackup: (id, patch) => {
-      const next = get().backups.map((b) => (b.id === id ? { ...b, ...patch } : b));
-      saveToStorage(next);
-      set({ backups: next });
-    },
-    reset: () => {
-      saveToStorage([]);
-      set({ backups: [] });
-    },
-  };
-});

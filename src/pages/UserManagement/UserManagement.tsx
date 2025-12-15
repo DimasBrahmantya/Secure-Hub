@@ -6,12 +6,12 @@ import { Users, UserMinus, LogOut, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface UserItem {
-  id: number;
+  _id: string;
   name: string;
   email: string;
   role: string;
   status: string;
-  password: string;
+  password?: string;
 }
 
 export default function UserManagement() {
@@ -21,36 +21,28 @@ export default function UserManagement() {
   // ================== LOAD USERS ==================
   const [users, setUsers] = useState<UserItem[]>([]);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("securehub_users");
-
-    if (stored) {
-      setUsers(JSON.parse(stored));
-    } else {
-      const defaultUsers = [
-        { id: 1, name: "Dimas", email: "dimas@example.com", role: "Admin", status: "active", password: "123456" },
-        { id: 2, name: "Budi", email: "budi@example.com", role: "User", status: "active", password: "123456" },
-        { id: 3, name: "Santi", email: "santi@example.com", role: "User", status: "inactive", password: "123456" },
-      ];
-      setUsers(defaultUsers);
-      localStorage.setItem("securehub_users", JSON.stringify(defaultUsers));
-    }
-  }, []);
-
-  const saveUsers = (updated: UserItem[]) => {
-    setUsers(updated);
-    localStorage.setItem("securehub_users", JSON.stringify(updated));
+  const loadUsers = async () => {
+    const res = await fetch("http://localhost:3000/auth");
+    const data = await res.json();
+    setUsers(data);
   };
 
-  // ================== DELETE POPUP ==================
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
-  const deleteUser = () => {
-    if (confirmDelete !== null) {
-      const updated = users.filter((u) => u.id !== confirmDelete);
-      saveUsers(updated);
-      setConfirmDelete(null);
-    }
+  // ================== DELETE POPUP ==================
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const deleteUser = async () => {
+    if (!confirmDelete) return;
+
+    await fetch(`http://localhost:3000/auth/${confirmDelete}`, {
+      method: "DELETE",
+    });
+
+    setUsers(users.filter((u) => u._id !== confirmDelete));
+    setConfirmDelete(null);
   };
 
   // ================== ADD USER POPUP ==================
@@ -60,19 +52,24 @@ export default function UserManagement() {
   const [newRole, setNewRole] = useState("User");
   const [newPassword, setNewPassword] = useState("");
 
-  const addUser = () => {
+  const addUser = async () => {
     if (!newName.trim() || !newEmail.trim() || !newPassword.trim()) return;
 
-    const newUser: UserItem = {
-      id: users.length + 1,
+    const body = {
       name: newName,
       email: newEmail,
+      password: newPassword,
       role: newRole,
       status: "active",
-      password: newPassword, // saved but not shown
     };
 
-    saveUsers([...users, newUser]);
+    await fetch("http://localhost:3000/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    await loadUsers();
 
     setShowAddUser(false);
     setNewName("");
@@ -84,11 +81,24 @@ export default function UserManagement() {
   // ================== EDIT USER POPUP ==================
   const [editUser, setEditUser] = useState<UserItem | null>(null);
 
-  const updateUser = () => {
+  const updateUser = async () => {
     if (!editUser) return;
 
-    const updated = users.map((u) => (u.id === editUser.id ? editUser : u));
-    saveUsers(updated);
+    const body = {
+      name: editUser.name,
+      email: editUser.email,
+      password: editUser.password,
+      role: editUser.role,
+      status: editUser.status,
+    };
+
+    await fetch(`http://localhost:3000/auth/${editUser._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    await loadUsers();
     setEditUser(null);
   };
 
@@ -99,8 +109,12 @@ export default function UserManagement() {
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
         <header className="flex justify-between items-start mb-10">
           <div className="flex flex-col gap-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">User Management</h1>
-            <p className="text-lg text-gray-700">Manage user accounts and permissions</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              User Management
+            </h1>
+            <p className="text-lg text-gray-700">
+              Manage user accounts and permissions
+            </p>
           </div>
 
           <div className="flex gap-3">
@@ -160,9 +174,9 @@ export default function UserManagement() {
           <tbody>
             {users.map((u) => (
               <UserRow
-                key={u.id}
+                key={u._id}
                 user={u}
-                onDelete={() => setConfirmDelete(u.id)}
+                onDelete={() => setConfirmDelete(u._id)}
                 onEdit={() => setEditUser(u)}
               />
             ))}
@@ -173,10 +187,10 @@ export default function UserManagement() {
       {/* ===================== DELETE POPUP ===================== */}
       {confirmDelete !== null && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
-            <h2 className="text-xl font-semibold mb-3">Delete User?</h2>
+          <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
+            <h2 className="text-xl font-semibold mb-3 text-white">Delete User?</h2>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-white-800 mb-6">
               Yakin ingin menghapus user dengan ID {confirmDelete}?
             </p>
 
@@ -203,7 +217,9 @@ export default function UserManagement() {
       {showAddUser && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
-            <h2 className="text-xl font-semibold mb-3">Add New User</h2>
+            <h2 className="text-xl font-semibold mb-3 text-white">
+              Add New User
+            </h2>
 
             <label className="text-white font-medium">Name</label>
             <input
@@ -265,13 +281,15 @@ export default function UserManagement() {
       {editUser && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px] animate-scaleIn">
-            <h2 className="text-xl font-semibold mb-3">Edit User</h2>
+            <h2 className="text-xl font-semibold mb-3 text-white">Edit User</h2>
 
             <label className="text-white font-medium">Name</label>
             <input
               type="text"
               value={editUser.name}
-              onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
+              onChange={(e) =>
+                setEditUser({ ...editUser, name: e.target.value })
+              }
               className="w-full p-2 border rounded mb-4 mt-1"
             />
 
@@ -279,15 +297,19 @@ export default function UserManagement() {
             <input
               type="email"
               value={editUser.email}
-              onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
+              onChange={(e) =>
+                setEditUser({ ...editUser, email: e.target.value })
+              }
               className="w-full p-2 border rounded mb-4 mt-1"
             />
 
             <label className="text-white font-medium">Password (new)</label>
             <input
               type="password"
-              value={editUser.password}
-              onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
+              value={editUser.password || ""}
+              onChange={(e) =>
+                setEditUser({ ...editUser, password: e.target.value })
+              }
               className="w-full p-2 border rounded mb-4 mt-1"
               placeholder="Enter new password"
             />
@@ -295,7 +317,9 @@ export default function UserManagement() {
             <label className="text-white font-medium">Role</label>
             <select
               value={editUser.role}
-              onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+              onChange={(e) =>
+                setEditUser({ ...editUser, role: e.target.value })
+              }
               className="w-full p-2 border rounded mb-4 mt-1 bg-[#2c2c2c] text-white"
             >
               <option value="Admin">Admin</option>
@@ -334,7 +358,8 @@ export default function UserManagement() {
       )}
 
       {/* ===================== ANIMATIONS ===================== */}
-      <style>{`
+      <style>
+        {`
         .animate-fadeIn {
           animation: fadeIn 0.25s ease-out;
         }
@@ -350,7 +375,8 @@ export default function UserManagement() {
           from { opacity: 0; transform: scale(0.9); }
           to { opacity: 1; transform: scale(1); }
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 }

@@ -1,160 +1,225 @@
-import { useState, useEffect } from "react";
+// src/pages/Dashboard/Dashboard.tsx
 import { useNavigate } from "react-router-dom";
-
 import Sidebar from "../../components/Sidebar";
-import Header from "../../components/Header";
 import StatCard from "../../components/StatCard";
-
+import RecentActivity from "../../components/RecentActivity";
+import FeatureCard from "../../components/FeatureCard";
 import {
-  getBackups,
-  generateBackup,
-  deleteBackup,
-  restoreBackup,
-} from "../../api/backup";
+  Shield,
+  Database,
+  Activity,
+  TrendingUp,
+  LogOut,
+  CheckCircle,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  getDashboardStats,
+  getDashboardActivity,
+  getDashboardOverview,
+} from "../../api/dashboard";
 
-import { Trash2, UploadCloud, Database } from "lucide-react";
-
-function formatAgo(iso: string) {
-  const then = new Date(iso).getTime();
-  const diff = Date.now() - then;
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins} min ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hrs ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days} days ago`;
-}
-
-export default function BackupIndex() {
+export default function Dashboard() {
   const navigate = useNavigate();
 
-  const [backups, setBackups] = useState<any[]>([]);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [topStats, setTopStats] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
 
-  const load = async () => {
-    const data = await getBackups();
-    setBackups(data);
-  };
+  interface ActivityItem {
+    time: any;
+    description?: string;
+  }
+
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
+
+  const handleLogout = () => navigate("/login");
 
   useEffect(() => {
+    const load = async () => {
+      const s = await getDashboardStats(); // stat cards
+      const o = await getDashboardOverview(); // feature cards
+      const a = await getDashboardActivity();
+
+      setTopStats(s);
+      setDashboardStats(o);
+      setActivity(
+        (Array.isArray(a) ? a : []).map((item: any) => ({
+          time: item.time ?? item.createdAt ?? null,
+          description: item.message ?? item.title ?? "-",
+        }))
+      );
+    };
+
     load();
   }, []);
 
-  const handleCreateBackup = async () => {
-    const result = await generateBackup();
-    await load();
-    navigate("/backup/progress", { state: { id: result._id } });
-  };
+  const features = dashboardStats
+    ? [
+        {
+          icon: <Shield className="w-8 h-8 text-red-600" />,
+          title: "Anti-Phishing Protection",
+          description: "AI-powered threat detection and prevention",
+          stats: [
+            {
+              label: "URLs Analyzed Today",
+              value: String(dashboardStats.phishing?.urlsAnalyzedToday ?? 0),
+            },
+            {
+              label: "Threats Detected",
+              value: String(dashboardStats.phishing?.threatsDetected ?? 0),
+            },
+          ],
+          buttonText: "Go to Anti-Phishing",
+          navigateTo: "/antiphishing",
+        },
+        {
+          icon: <Database className="w-7 h-7 text-orange-500" />,
+          title: "Backup & Restore",
+          description: "Secure data backup and recovery",
+          stats: [
+            {
+              label: "Total Backups",
+              value: String(dashboardStats.backup?.total ?? 0),
+            },
+            {
+              label: "Storage Used",
+              value: dashboardStats.backup?.storageUsed ?? "0 GB",
+            },
+          ],
+          buttonText: "Manage Backup",
+          navigateTo: "/backup",
+        },
+        {
+          icon: <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} />,
+          title: "System Monitoring",
+          description: "Real-time activity logs and alerts",
+          stats: [
+            {
+              label: "Active Sessions",
+              value: String(dashboardStats.monitoring?.activeSessions ?? 0),
+            },
+            {
+              label: "Pending Alerts",
+              value: String(dashboardStats.monitoring?.pendingAlerts ?? 0),
+            },
+          ],
+          buttonText: "View Notifications",
+          navigateTo: "/monitoring",
+        },
+        {
+          icon: (
+            <TrendingUp className="w-8 h-8 text-green-500" strokeWidth={3} />
+          ),
+          title: "Admin Panel",
+          description: "System configuration and management",
+          stats: [
+            {
+              label: "Total Users",
+              value: String(dashboardStats.admin?.totalUsers ?? "—"),
+            },
+            {
+              label: "AI Sensitivity",
+              value: dashboardStats.admin?.aiSensitivity ?? "—",
+            },
+          ],
+          buttonText: "Admin Panel",
+          navigateTo: "/admin",
+        },
+      ]
+    : [];
 
-  const handleRestore = async (file: File) => {
-    await restoreBackup(file);
-    alert("Database restored!");
-  };
-
-  const handleDelete = (id: string) => {
-    setConfirmDeleteId(id);
-  };
-
-  const confirmDelete = async () => {
-    if (!confirmDeleteId) return;
-
-    await deleteBackup(confirmDeleteId);
-    await load();
-
-    setConfirmDeleteId(null);
-    navigate("/delete/success");
-  };
-
-  const totalBackups = backups.length;
-  const latestBackup = backups[0]?.size
-    ? `${(backups[0].size / 1024).toFixed(2)} KB`
-    : "0 KB";
-  const readyCount = totalBackups;
+  const statIcons = [
+    <CheckCircle className="w-6 h-6 text-teal-400" strokeWidth={2.5} />,
+    <Database className="w-7 h-7 text-orange-500" />,
+    <Shield className="w-7 h-7 text-red-600" />,
+    <Activity className="w-7 h-7 text-blue-500" strokeWidth={3} />,
+  ];
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
       <Sidebar />
 
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-        <Header
-          title="Backup & Restore"
-          subtitle="Manage data backups"
-          onLogout={() => navigate("/login")}
-        />
+        {/* HEADER */}
+        <header className="flex justify-between items-start mb-8">
+          <div className="flex flex-col gap-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Security Dashboard
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-700">
+              Monitor and manage your security infrastructure
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <StatCard
-            title="Total Backups"
-            value={String(totalBackups)}
-            subtitle="All stored backups"
-            icon={<Database className="w-10 h-10 text-orange-500" />}
-          />
-
-          <StatCard
-            title="Latest Backup Size"
-            value={latestBackup}
-            subtitle="Most recent file"
-            icon={<UploadCloud className="w-10 h-10 text-blue-500" />}
-          />
-
-          <StatCard
-            title="Ready Backups"
-            value={String(readyCount)}
-            subtitle="Available to restore"
-            icon={<Database className="w-10 h-10 text-orange-500" />}
-          />
-        </div>
-
-        <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black mb-6 mt-10 flex flex-col gap-4">
           <button
-            onClick={handleCreateBackup}
-            className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold"
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
           >
-            <UploadCloud className="w-5 h-5 text-blue-500" /> Backup Now
+            <LogOut className="w-6 h-6" />
+            <span className="font-semibold">Logout</span>
           </button>
+        </header>
 
-          <label className="block">
-            <p className="text-white text-sm mt-2">Restore Database:</p>
-            <input
-              type="file"
-              onChange={(e) => handleRestore(e.target.files![0])}
-              className="text-white"
+        {/* TOP STATS */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {topStats.length === 0 ? (
+            // simple placeholders so layout doesn't break
+            <>
+              <StatCard
+                title="Security Status"
+                value="—"
+                subtitle="—"
+                icon={<Shield />}
+              />
+              <StatCard
+                title="Last Backup"
+                value="—"
+                subtitle="—"
+                icon={<Database />}
+              />
+              <StatCard
+                title="Threats Blocked"
+                value="—"
+                subtitle="—"
+                icon={<Shield />}
+              />
+              <StatCard
+                title="Active Monitoring"
+                value="—"
+                subtitle="—"
+                icon={<Activity />}
+              />
+            </>
+          ) : (
+            topStats.map((stat: any, idx: number) => (
+              <StatCard
+                key={idx}
+                title={stat.title}
+                value={stat.value}
+                subtitle={stat.subtitle}
+                icon={statIcons[idx] ?? <Shield />}
+              />
+            ))
+          )}
+        </section>
+
+        {/* FEATURES */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {features.map((feature, idx) => (
+            <FeatureCard
+              key={idx}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              stats={feature.stats}
+              buttonText={feature.buttonText}
+              navigateTo={feature.navigateTo}
             />
-          </label>
-        </div>
+          ))}
+        </section>
 
-        <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black">
-          <table className="w-full text-left">
-            <tbody>
-              {backups.map((b) => (
-                <tr key={b._id} className="text-white">
-                  <td className="py-3">{b.fileName}</td>
-                  <td className="py-3">
-                    {(b.size / 1024).toFixed(2)} KB
-                  </td>
-                  <td className="py-3">{formatAgo(b.createdAt)}</td>
-                  <td className="py-3">
-                    <a
-                      href={`http://localhost:3000/backup/download/${b.fileName}`}
-                      className="px-3 py-1 rounded bg-[#5CC8BA] text-white"
-                    >
-                      Download
-                    </a>
-                  </td>
-                  <td className="py-3">
-                    <button
-                      onClick={() => handleDelete(b._id)}
-                      className="px-3 py-1 rounded bg-red-700 text-white"
-                    >
-                      <Trash2 className="w-4 h-4 inline-block" /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {/* RECENT ACTIVITY */}
+        <RecentActivity activity={activity} />
       </main>
     </div>
   );

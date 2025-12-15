@@ -57,7 +57,26 @@ export default function UrlAnalysis() {
     }
   };
 
+  const fetchResult = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/phishing/check?url=${encodeURIComponent(
+          targetUrl
+        )}`
+      );
+
+      const data = await res.json();
+
+      if (data.status === "Safe") setIsSafe(true);
+      else setIsSafe(false);
+    } catch (err) {
+      console.error("Failed get scan result:", err);
+      setIsSafe(false);
+    }
+  };
+
   // 🔥 Simulasi scanning 0 → 100%
+  // Simulasi progress lalu ambil hasil dari backend
   useEffect(() => {
     let total = 0;
 
@@ -68,9 +87,7 @@ export default function UrlAnalysis() {
       if (total >= 100) {
         clearInterval(interval);
         setDone(true);
-
-        // SET HASIL ANALISIS BERDASARKAN ANTIPHISHING
-        loadScanResult();
+        fetchResult(); // 🔥 Ambil hasil dari backend
       }
     }, 250);
 
@@ -170,8 +187,14 @@ export default function UrlAnalysis() {
                 <div className="flex gap-4 mt-3">
                   <Button
                     variant="destructive"
-                    onClick={() =>{ 
-                      blockURL(targetUrl);
+                    onClick={async () => {
+                      await fetch("http://localhost:3000/phishing/block", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ url: targetUrl }),
+                      });
+
+                      blockURL(targetUrl); // simpan lokal
                       setOpenBlock(true);
                     }}
                     className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
@@ -180,8 +203,14 @@ export default function UrlAnalysis() {
                   </Button>
 
                   <Button
-                    onClick={() =>{
-                      reportURL(targetUrl); 
+                    onClick={async () => {
+                      await fetch("http://localhost:3000/phishing/report", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ url: targetUrl }),
+                      });
+
+                      reportURL(targetUrl); // simpan lokal
                       setOpenReport(true);
                     }}
                     className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white"
@@ -244,7 +273,8 @@ export default function UrlAnalysis() {
               <Bug /> Report Suspicious URL
             </DialogTitle>
             <DialogDescription className="text-gray-300">
-              Laporkan URL ini kepada sistem kami agar dapat dianalisis lebih lanjut.
+              Laporkan URL ini kepada sistem kami agar dapat dianalisis lebih
+              lanjut.
             </DialogDescription>
           </DialogHeader>
 
