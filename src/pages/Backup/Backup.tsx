@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useBackupStore, type BackupItem } from "../../store/backupStore";
+
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import StatCard from "../../components/StatCard";
+
+import {
+  getBackups,
+  generateBackup,
+  deleteBackup,
+  restoreBackup,
+} from "../../api/backup";
+
 import { Trash2, UploadCloud, Database } from "lucide-react";
 
 function formatAgo(iso: string) {
@@ -20,56 +28,69 @@ function formatAgo(iso: string) {
 
 export default function BackupIndex() {
   const navigate = useNavigate();
-  const backups = useBackupStore((s) => s.backups);
-  const addBackup = useBackupStore((s) => s.addBackup);
-  const removeBackup = useBackupStore((s) => s.removeBackup);
-  const updateBackup = useBackupStore((s) => s.updateBackup);
 
+  const [backups, setBackups] = useState<any[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const handleCreateBackup = () => {
-    const id = Math.random().toString(36).slice(2, 9);
-    const now = new Date().toISOString();
-    const item: BackupItem = {
-      id,
-      name: `backup-${new Date()
-        .toISOString()
-        .slice(0, 19)
-        .replace(/[:T]/g, "-")}.zip`,
-      size: `${(Math.random() * 30 + 10).toFixed(1)} MB`,
-      createdAt: now,
-      status: "ready",
-    };
-
-    addBackup(item);
-    navigate("/backup/progress", { state: { id } });
+  // ===============================
+  // LOAD BACKUPS FROM BACKEND
+  // ===============================
+  const load = async () => {
+    const data = await getBackups();
+    setBackups(data);
   };
 
-  const handleRestore = (id: string) => {
-    updateBackup(id, { status: "restoring" });
-    navigate("/restore/progress", { state: { id } });
+  useEffect(() => {
+    load();
+  }, []);
+
+  // ===============================
+  // CREATE BACKUP
+  // ===============================
+  const handleCreateBackup = async () => {
+    const result = await generateBackup();
+    await load();
+    navigate("/backup/progress", { state: { id: result._id } });
   };
 
+  // ===============================
+  // RESTORE BACKUP
+  // ===============================
+  const handleRestore = async (file: File) => {
+    await restoreBackup(file);
+    alert("Database restored!");
+  };
+
+  // ===============================
+  // DELETE BACKUP
+  // ===============================
   const handleDelete = (id: string) => {
     setConfirmDeleteId(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!confirmDeleteId) return;
-    removeBackup(confirmDeleteId);
+
+    await deleteBackup(confirmDeleteId);
+    await load();
+
     setConfirmDeleteId(null);
     navigate("/delete/success");
   };
 
+  // ===============================
+  // STATS
+  // ===============================
   const totalBackups = backups.length;
-  const latestBackup = backups[0]?.size || "0 MB";
-  const readyCount = backups.filter((b) => b.status === "ready").length;
+  const latestBackup = backups[0]?.size
+    ? `${(backups[0].size / 1024).toFixed(2)} KB`
+    : "0 KB";
+  const readyCount = totalBackups;
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
       <Sidebar />
 
-      {/* FOLLOW EXACT LAYOUT LIKE ANTI-PHISHING */}
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
         <Header
           title="Backup & Restore"
@@ -101,9 +122,8 @@ export default function BackupIndex() {
           />
         </div>
 
-        {/* ===== TABLE HEADER ===== */}
+        {/* ===== CREATE BACKUP AREA ===== */}
         <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black mb-6 mt-10 flex flex-col gap-4">
-          {/* TITLE + ICON */}
           <div className="flex items-center gap-3">
             <Database className="w-7 h-7 text-orange-500" />
             <div>
@@ -114,13 +134,21 @@ export default function BackupIndex() {
             </div>
           </div>
 
-          {/* BUTTON */}
           <button
             onClick={handleCreateBackup}
             className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold"
           >
             <UploadCloud className="w-5 h-5 text-blue-500" /> Backup Now
           </button>
+
+          <label className="block">
+            <p className="text-white text-sm mt-2">Restore Database:</p>
+            <input
+              type="file"
+              onChange={(e) => handleRestore(e.target.files![0])}
+              className="text-white"
+            />
+          </label>
         </div>
 
         {/* ===== BACKUP TABLE ===== */}
@@ -147,27 +175,29 @@ export default function BackupIndex() {
 
               {backups.map((b) => (
                 <tr
-                  key={b.id}
+                  key={b._id}
                   className="text-white border-b border-gray-700/40"
                 >
-                  <td className="py-3">{b.name}</td>
-                  <td className="py-3">{b.size}</td>
+                  <td className="py-3">{b.fileName}</td>
+                  <td className="py-3">
+                    {(b.size / 1024).toFixed(2)} KB
+                  </td>
                   <td className="py-3 text-gray-300">
                     {formatAgo(b.createdAt)}
                   </td>
-                  <td className="py-3 capitalize">{b.status}</td>
+                  <td className="py-3 capitalize">ready</td>
+
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleRestore(b.id)}
-                        disabled={b.status !== "ready"}
-                        className="px-3 py-1 rounded bg-[#5CC8BA] hover:bg-[#4DB8AA] text-white font-semibold"
+                      <a
+                        href={`http://localhost:3000/backup/download/${b.fileName}`}
+                        className="px-3 py-1 rounded bg-[#5CC8BA] text-white font-semibold"
                       >
-                        Restore
-                      </button>
+                        Download
+                      </a>
 
                       <button
-                        onClick={() => handleDelete(b.id)}
+                        onClick={() => handleDelete(b._id)}
                         className="px-3 py-1 rounded bg-red-700 hover:bg-red-800 text-white"
                       >
                         <Trash2 className="w-4 h-4 inline-block" /> Delete
