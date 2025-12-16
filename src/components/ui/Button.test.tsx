@@ -1,16 +1,17 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import Button from "./Button";
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { Button } from './button';
 
-describe("Button Component", () => {
-  test("renders button with correct label", () => {
-    render(<Button label="Submit" />);
-    expect(screen.getByText("Submit")).toBeInTheDocument();
+describe('Button component', () => {
+  it('renders button with text', () => {
+    render(<Button>Click Me</Button>);
+    expect(screen.getByText('Click Me')).toBeInTheDocument();
   });
 
-  test("calls onClick when clicked", () => {
-    const onClickMock = vi.fn();
-    render(<Button label="Click" onClick={onClickMock} />);
-    fireEvent.click(screen.getByText("Click"));
-    expect(onClickMock).toHaveBeenCalledOnce();
+  it('handles click event', () => {
+    const onClick = vi.fn();
+    render(<Button onClick={onClick}>Click</Button>);
+    fireEvent.click(screen.getByText('Click'));
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });
