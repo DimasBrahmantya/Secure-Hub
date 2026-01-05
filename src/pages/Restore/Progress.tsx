@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
-import { useBackupStore } from "../../store/backupStore";
 import { restoreBackupByName } from "../../api/backup";
 
 export default function RestoreProgress() {

@@ -38,24 +38,24 @@ export default function UrlAnalysis() {
   const [openReport, setOpenReport] = useState(false);
 
   // 🔥 Ambil hasil scan dari localStorage lalu tentukan aman / bahaya
-  const loadScanResult = () => {
-    const stored = localStorage.getItem("recent_scans");
-    const list = stored ? JSON.parse(stored) : [];
+  // const loadScanResult = () => {
+  //   const stored = localStorage.getItem("recent_scans");
+  //   const list = stored ? JSON.parse(stored) : [];
 
-    const match = list.find((item: any) => item.url === targetUrl);
+  //   const match = list.find((item: any) => item.url === targetUrl);
 
-    if (!match) {
-      // kalau tiba2 tidak ada, fallback dianggap Warning
-      setIsSafe(false);
-      return;
-    }
+  //   if (!match) {
+  //     // kalau tiba2 tidak ada, fallback dianggap Warning
+  //     setIsSafe(false);
+  //     return;
+  //   }
 
-    if (match.status === "Safe") {
-      setIsSafe(true);
-    } else {
-      setIsSafe(false);
-    }
-  };
+  //   if (match.status === "Safe") {
+  //     setIsSafe(true);
+  //   } else {
+  //     setIsSafe(false);
+  //   }
+  // };
 
   const fetchResult = async () => {
     try {

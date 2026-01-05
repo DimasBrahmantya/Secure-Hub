@@ -1,10 +1,10 @@
-interface UserRowProps {
-  id: number;
-  name: string;
-  role: string;
-  status: string;
-  onDelete: () => void;
-}
+// interface UserRowProps {
+//   id: number;
+//   name: string;
+//   role: string;
+//   status: string;
+//   onDelete: () => void;
+// }
 
 import { Trash2, Pencil } from "lucide-react";
 
