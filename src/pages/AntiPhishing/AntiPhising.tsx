@@ -30,15 +30,17 @@ export default function AntiPhishing() {
   });
 
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleLogout = () => navigate("/login");
 
   // ========================== FETCH STATISTICS ==========================
   const loadStats = async () => {
     try {
-      const res = await fetch("http://localhost:3000/phishing");
-      const data: Scan[] = await res.json();
+      const res = await fetch(`${API_URL}/phishing`);
+      if (!res.ok) throw new Error("Failed to fetch phishing stats");
 
+      const data: Scan[] = await res.json();
       if (!Array.isArray(data)) return;
 
       const safe = data.filter((i) => i.status === "Safe").length;
@@ -56,11 +58,11 @@ export default function AntiPhishing() {
     loadStats();
   }, []);
 
-  // Trigger refresh stats setiap ada block/report/rescan
   const refreshAfterAction = () => {
     loadStats();
   };
 
+  // ========================== SCAN URL ==========================
   const handleCheck = async (manualURL?: string) => {
     const targetURL = manualURL ?? url;
     if (!targetURL.trim()) return;
@@ -71,17 +73,19 @@ export default function AntiPhishing() {
         : `https://${targetURL}`;
 
     try {
-      await fetch("http://localhost:3000/phishing/scan", {
+      const res = await fetch(`${API_URL}/phishing/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: formatted }),
       });
 
-      refreshAfterAction();
+      if (!res.ok) throw new Error("Failed to scan URL");
 
+      refreshAfterAction();
       navigate(`/analysis?url=${encodeURIComponent(formatted)}`);
     } catch (err) {
       console.error("Scan failed:", err);
+      alert("Scan gagal, silakan coba lagi.");
     }
   };
 

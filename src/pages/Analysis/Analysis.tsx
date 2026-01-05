@@ -37,49 +37,27 @@ export default function UrlAnalysis() {
   const [openBlock, setOpenBlock] = useState(false);
   const [openReport, setOpenReport] = useState(false);
 
-  // 🔥 Ambil hasil scan dari localStorage lalu tentukan aman / bahaya
-  // const loadScanResult = () => {
-  //   const stored = localStorage.getItem("recent_scans");
-  //   const list = stored ? JSON.parse(stored) : [];
+  // API URL dari env
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  //   const match = list.find((item: any) => item.url === targetUrl);
-
-  //   if (!match) {
-  //     // kalau tiba2 tidak ada, fallback dianggap Warning
-  //     setIsSafe(false);
-  //     return;
-  //   }
-
-  //   if (match.status === "Safe") {
-  //     setIsSafe(true);
-  //   } else {
-  //     setIsSafe(false);
-  //   }
-  // };
-
+  // Ambil hasil scan dari backend
   const fetchResult = async () => {
     try {
       const res = await fetch(
-        `http://localhost:3000/phishing/check?url=${encodeURIComponent(
-          targetUrl
-        )}`
+        `${API_URL}/phishing/check?url=${encodeURIComponent(targetUrl)}`
       );
-
+      if (!res.ok) throw new Error("Failed to fetch scan result");
       const data = await res.json();
-
-      if (data.status === "Safe") setIsSafe(true);
-      else setIsSafe(false);
+      setIsSafe(data.status === "Safe");
     } catch (err) {
       console.error("Failed get scan result:", err);
       setIsSafe(false);
     }
   };
 
-  // 🔥 Simulasi scanning 0 → 100%
-  // Simulasi progress lalu ambil hasil dari backend
+  // Simulasi scanning 0 → 100%
   useEffect(() => {
     let total = 0;
-
     const interval = setInterval(() => {
       total += 20;
       setProgress(total);
@@ -87,16 +65,49 @@ export default function UrlAnalysis() {
       if (total >= 100) {
         clearInterval(interval);
         setDone(true);
-        fetchResult(); // 🔥 Ambil hasil dari backend
+        fetchResult(); // Ambil hasil dari backend
       }
     }, 250);
 
     return () => clearInterval(interval);
   }, [targetUrl]);
 
+  const handleBlock = async () => {
+    try {
+      const res = await fetch(`${API_URL}/phishing/block`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: targetUrl }),
+      });
+      if (!res.ok) throw new Error("Failed to block URL");
+
+      blockURL(targetUrl); // simpan lokal
+      setOpenBlock(true);
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memblokir URL");
+    }
+  };
+
+  const handleReport = async () => {
+    try {
+      const res = await fetch(`${API_URL}/phishing/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: targetUrl }),
+      });
+      if (!res.ok) throw new Error("Failed to report URL");
+
+      reportURL(targetUrl); // simpan lokal
+      setOpenReport(true);
+    } catch (err) {
+      console.error(err);
+      alert("Gagal melaporkan URL");
+    }
+  };
+
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      {/* SIDEBAR */}
       <Sidebar />
 
       <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
@@ -106,7 +117,6 @@ export default function UrlAnalysis() {
           onLogout={() => navigate("/login")}
         />
 
-        {/* BACK BUTTON */}
         <button
           onClick={() => navigate("/antiphishing")}
           className="flex items-center gap-1 mb-6 text-white hover:opacity-70"
@@ -114,28 +124,24 @@ export default function UrlAnalysis() {
           <ArrowLeft /> Back
         </button>
 
-        {/* ANALYSIS CARD */}
         <div className="bg-[#2C2C2C] text-white rounded-xl p-6 border border-black w-full max-w-6xl">
           <p className="opacity-70 text-sm mb-1">Analyzing URL</p>
           <h2 className="font-semibold text-lg mb-4 break-all">{targetUrl}</h2>
 
-          {/* LOADING BAR */}
           {!done && (
             <div className="bg-[#1D1D1D] rounded-lg p-5 border border-[#3A3A3A]">
               <div className="w-full bg-[#3A3A3A] h-3 rounded-full overflow-hidden">
                 <div
                   className="h-3 bg-[#5CC8BA] transition-all duration-200"
                   style={{ width: `${progress}%` }}
-                ></div>
+                />
               </div>
-
               <p className="text-sm mt-3 opacity-80">
                 Scanning for threats… {progress}%
               </p>
             </div>
           )}
 
-          {/* RESULT */}
           {done && isSafe !== null && (
             <div className="bg-[#1D1D1D] rounded-lg p-5 border border-[#3A3A3A] flex flex-col gap-4">
               <div
@@ -153,9 +159,7 @@ export default function UrlAnalysis() {
 
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {isSafe
-                      ? "Site Appears Safe"
-                      : "Potentially Dangerous Site"}
+                    {isSafe ? "Site Appears Safe" : "Potentially Dangerous Site"}
                   </h3>
                   <p className="text-sm opacity-80">
                     Threat score: {isSafe ? "9/10" : "3/10"}
@@ -163,10 +167,8 @@ export default function UrlAnalysis() {
                 </div>
               </div>
 
-              {/* RECOMMENDATIONS */}
               <div className="mt-1">
                 <p className="text-sm font-semibold mb-2">Recommendations</p>
-
                 {isSafe ? (
                   <ul className="text-sm ml-3 opacity-80 list-disc">
                     <li>Safe to access</li>
@@ -182,37 +184,18 @@ export default function UrlAnalysis() {
                 )}
               </div>
 
-              {/* DANGER OPTIONS */}
               {!isSafe && (
                 <div className="flex gap-4 mt-3">
                   <Button
                     variant="destructive"
-                    onClick={async () => {
-                      await fetch("http://localhost:3000/phishing/block", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ url: targetUrl }),
-                      });
-
-                      blockURL(targetUrl); // simpan lokal
-                      setOpenBlock(true);
-                    }}
+                    onClick={handleBlock}
                     className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
                   >
                     <ShieldBan className="w-5 h-5" /> Block Access
                   </Button>
 
                   <Button
-                    onClick={async () => {
-                      await fetch("http://localhost:3000/phishing/report", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ url: targetUrl }),
-                      });
-
-                      reportURL(targetUrl); // simpan lokal
-                      setOpenReport(true);
-                    }}
+                    onClick={handleReport}
                     className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white"
                   >
                     <Bug className="w-5 h-5" /> Report URL
@@ -222,7 +205,6 @@ export default function UrlAnalysis() {
             </div>
           )}
 
-          {/* Continue */}
           {done && (
             <button
               onClick={() => navigate("/antiphishing")}

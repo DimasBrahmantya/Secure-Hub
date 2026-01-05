@@ -2,33 +2,32 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import StatCard from "../../components/StatCard";
 import NotificationItem from "../../components/NotificationItem";
-import {
-  Activity,
-  AlertTriangle,
-  CalendarCheck,
-  Bell,
-  LogOut,
-} from "lucide-react";
+import { Activity, AlertTriangle, CalendarCheck, Bell, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Monitoring() {
   const navigate = useNavigate();
   const handleLogout = () => navigate("/login");
 
-  const [activities, setActivities] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // ===============================
   // FETCH MONITORING LOGS
   // ===============================
-  const fetchMonitoring = () => {
-    fetch("http://localhost:3000/monitoring")
-      .then((res) => res.json())
-      .then((data) => {
-        setActivities(data.filter((d: any) => d.type === "activity"));
-        setNotifications(data.filter((d: any) => d.type === "notification"));
-      })
-      .catch((err) => console.error("Monitoring fetch error:", err));
+  const fetchMonitoring = async () => {
+    try {
+      const res = await fetch(`${API_URL}/monitoring`);
+      if (!res.ok) throw new Error("Failed to fetch monitoring logs");
+
+      const data = await res.json();
+      setActivities(data.filter((d: any) => d.type === "activity"));
+      setNotifications(data.filter((d: any) => d.type === "notification"));
+    } catch (err) {
+      console.error("Monitoring fetch error:", err);
+    }
   };
 
   useEffect(() => {

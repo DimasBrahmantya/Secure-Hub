@@ -1,19 +1,31 @@
-const BASE_URL = "http://localhost:3000";
+// src/api/dashboard.ts
 
-// GET STATISTIK DASHBOARD
+// Gunakan environment variable dari Vite
+const API_URL = import.meta.env.VITE_API_URL;
+
+/**
+ * GET DASHBOARD STATISTICS
+ */
 export async function getDashboardStats() {
-  const res = await fetch(`${BASE_URL}/dashboard/stats`);
+  const res = await fetch(`${API_URL}/dashboard/stats`);
+  if (!res.ok) throw new Error("Failed fetch dashboard stats");
   return res.json();
 }
 
-// GET ACTIVITY LOG
+/**
+ * GET DASHBOARD ACTIVITY LOG
+ */
 export async function getDashboardActivity() {
-  const res = await fetch(`${BASE_URL}/dashboard/activity`);
+  const res = await fetch(`${API_URL}/dashboard/activity`);
+  if (!res.ok) throw new Error("Failed fetch dashboard activity");
   return res.json();
 }
 
+/**
+ * GET DASHBOARD OVERVIEW
+ */
 export const getDashboardOverview = async () => {
-  const res = await fetch("http://localhost:3000/dashboard/overview");
+  const res = await fetch(`${API_URL}/dashboard/overview`);
+  if (!res.ok) throw new Error("Failed fetch dashboard overview");
   return res.json();
 };
-

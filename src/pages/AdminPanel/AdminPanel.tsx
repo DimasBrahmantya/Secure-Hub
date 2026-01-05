@@ -44,14 +44,18 @@ export default function Dashboard() {
 
   const [stats, setStats] = useState<DashboardStats>({
     users: { totalUsers: 0, activeUsers: 0, adminUsers: 0 },
-    system: {
-      aiSensitivity: "-",
-      securityScore: "-",
-    },
+    system: { aiSensitivity: "-", securityScore: "-" },
     reports: { totalReports: 0, threatsBlocked: 0 },
   });
 
   const [actions, setActions] = useState<AdminAction[]>([]);
+  const [, setLoadingStats] = useState(false);
+  const [loadingActions, setLoadingActions] = useState(false);
+
+  // ==============================
+  // API URL dari env
+  // ==============================
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // ==============================
   // FETCH DATA
@@ -63,21 +67,29 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch("http://localhost:3000/admin/stats");
+      setLoadingStats(true);
+      const res = await fetch(`${API_URL}/admin/stats`);
+      if (!res.ok) throw new Error("Failed to fetch stats");
       const data = await res.json();
       setStats(data);
     } catch (error) {
       console.error("Failed to load stats:", error);
+    } finally {
+      setLoadingStats(false);
     }
   };
 
   const fetchActions = async () => {
     try {
-      const res = await fetch("http://localhost:3000/admin/actions");
+      setLoadingActions(true);
+      const res = await fetch(`${API_URL}/admin/actions`);
+      if (!res.ok) throw new Error("Failed to fetch admin actions");
       const data = await res.json();
       setActions(data);
     } catch (error) {
       console.error("Failed to load admin actions:", error);
+    } finally {
+      setLoadingActions(false);
     }
   };
 
@@ -150,14 +162,8 @@ export default function Dashboard() {
             title="User Management"
             description="Manage user accounts, roles, and permissions"
             stats={[
-              {
-                label: "Active Users",
-                value: stats.users.activeUsers.toString(),
-              },
-              {
-                label: "Admin Users",
-                value: stats.users.adminUsers.toString(),
-              },
+              { label: "Active Users", value: stats.users.activeUsers.toString() },
+              { label: "Admin Users", value: stats.users.adminUsers.toString() },
             ]}
             buttonText="Manage Users"
             navigateTo="/users"
@@ -168,14 +174,8 @@ export default function Dashboard() {
             title="Statistics & Report"
             description="View analytics and security reports"
             stats={[
-              {
-                label: "Total Reports",
-                value: stats.reports.totalReports.toString(),
-              },
-              {
-                label: "Threats Blocked",
-                value: stats.reports.threatsBlocked.toString(),
-              },
+              { label: "Total Reports", value: stats.reports.totalReports.toString() },
+              { label: "Threats Blocked", value: stats.reports.threatsBlocked.toString() },
             ]}
             buttonText="View Statistics"
             navigateTo="/statistics"
@@ -184,22 +184,17 @@ export default function Dashboard() {
 
         {/* RECENT ADMIN ACTIONS */}
         <div className="bg-[#2c2c2c] rounded-xl p-6 mt-10">
-          <h3 className="text-xl font-semibold text-white">
-            Recent Administrative Action
-          </h3>
-          <p className="text-gray-300 mt-1">
-            Latest changes made by administrators
-          </p>
+          <h3 className="text-xl font-semibold text-white">Recent Administrative Action</h3>
+          <p className="text-gray-300 mt-1">Latest changes made by administrators</p>
 
           <div className="mt-6 flex flex-col gap-6">
-            {actions.length === 0 ? (
+            {loadingActions ? (
+              <p className="text-gray-300">Loading...</p>
+            ) : actions.length === 0 ? (
               <p className="text-gray-500">No recent actions</p>
             ) : (
               actions.map((a) => (
-                <div
-                  key={a._id}
-                  className="border-b border-gray-700 pb-4 flex justify-between"
-                >
+                <div key={a._id} className="border-b border-gray-700 pb-4 flex justify-between">
                   <div>
                     <p className="font-semibold text-white">{a.action}</p>
                     <p className="text-sm text-gray-400">by {a.admin}</p>
