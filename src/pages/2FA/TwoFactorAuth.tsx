@@ -13,6 +13,8 @@ export default function TwoFactorAuth() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<Array<HTMLInputElement | null>>(Array(6).fill(null));
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) value = value[0];
     if (!/^\d*$/.test(value)) return;
@@ -52,7 +54,7 @@ export default function TwoFactorAuth() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/auth/verify-otp", {
+      const response = await fetch(`${API_URL}/auth/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

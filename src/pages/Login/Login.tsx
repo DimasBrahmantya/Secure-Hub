@@ -9,6 +9,8 @@ export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -27,7 +29,7 @@ export const Login = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -38,7 +40,6 @@ export const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        
         toast.error("Login Failed", {
           description: data.message || "Invalid email or password",
           style: {
