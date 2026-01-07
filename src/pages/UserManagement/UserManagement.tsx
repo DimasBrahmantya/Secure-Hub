@@ -32,6 +32,7 @@ export default function UserManagement() {
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState("User");
   const [newPassword, setNewPassword] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ================== LOAD USERS ==================
   const loadUsers = async () => {
@@ -142,15 +143,27 @@ export default function UserManagement() {
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden relative">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-        <header className="flex justify-between items-start mb-10">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              User Management
-            </h1>
-            <p className="text-lg text-gray-700">Manage user accounts and permissions</p>
+      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px]">
+        <header className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-3">
+            {/* Mobile Sidebar Button */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden bg-gray-900 text-white p-2 rounded-lg"
+            >
+              <Users className="w-6 h-6" />
+            </button>
+
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                User Management
+              </h1>
+              <p className="text-lg text-gray-700 hidden md:block">
+                Manage user accounts and permissions
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -159,7 +172,7 @@ export default function UserManagement() {
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
               <UserPlus className="w-6 h-6" />
-              <span className="font-semibold">Add User</span>
+              <span className="font-semibold hidden sm:block">Add User</span>
             </button>
 
             <button
@@ -167,7 +180,7 @@ export default function UserManagement() {
               className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
             >
               <LogOut className="w-6 h-6" />
-              <span className="font-semibold">Logout</span>
+              <span className="font-semibold hidden sm:block">Logout</span>
             </button>
           </div>
         </header>
@@ -188,7 +201,9 @@ export default function UserManagement() {
           />
           <StatCard
             title="Inactive"
-            value={users.filter((u) => u.status === "inactive").length.toString()}
+            value={users
+              .filter((u) => u.status === "inactive")
+              .length.toString()}
             subtitle="Inactive accounts"
             icon={<UserMinus className="text-blue-500 w-10 h-10" />}
           />
@@ -222,7 +237,9 @@ export default function UserManagement() {
         {confirmDelete && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
             <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px]">
-              <h2 className="text-xl font-semibold mb-3 text-white">Delete User?</h2>
+              <h2 className="text-xl font-semibold mb-3 text-white">
+                Delete User?
+              </h2>
               <p className="text-white mb-6">
                 Yakin ingin menghapus user dengan ID {confirmDelete}?
               </p>
@@ -247,7 +264,9 @@ export default function UserManagement() {
         {showAddUser && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
             <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px]">
-              <h2 className="text-xl font-semibold mb-3 text-white">Add New User</h2>
+              <h2 className="text-xl font-semibold mb-3 text-white">
+                Add New User
+              </h2>
               <input
                 placeholder="Name"
                 className="w-full p-2 border rounded mb-3"
@@ -296,18 +315,24 @@ export default function UserManagement() {
         {editUser && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
             <div className="bg-[#2c2c2c] p-6 rounded-xl shadow-2xl w-[350px]">
-              <h2 className="text-xl font-semibold mb-3 text-white">Edit User</h2>
+              <h2 className="text-xl font-semibold mb-3 text-white">
+                Edit User
+              </h2>
               <input
                 placeholder="Name"
                 className="w-full p-2 border rounded mb-3"
                 value={editUser.name}
-                onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
+                onChange={(e) =>
+                  setEditUser({ ...editUser, name: e.target.value })
+                }
               />
               <input
                 placeholder="Email"
                 className="w-full p-2 border rounded mb-3"
                 value={editUser.email}
-                onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
+                onChange={(e) =>
+                  setEditUser({ ...editUser, email: e.target.value })
+                }
               />
               <input
                 placeholder="Password"
@@ -320,7 +345,9 @@ export default function UserManagement() {
               />
               <select
                 value={editUser.role}
-                onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+                onChange={(e) =>
+                  setEditUser({ ...editUser, role: e.target.value })
+                }
                 className="w-full p-2 border rounded mb-3 bg-[#2c2c2c] text-white"
               >
                 <option value="Admin">Admin</option>

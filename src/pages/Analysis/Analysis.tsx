@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
-import Header from "../../components/Header";
 import {
   ArrowLeft,
   CheckCircle,
   ShieldAlert,
   ShieldBan,
   Bug,
+  Shield,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -33,14 +34,12 @@ export default function UrlAnalysis() {
   const [done, setDone] = useState(false);
   const [isSafe, setIsSafe] = useState<boolean | null>(null);
 
-  // MODALS
   const [openBlock, setOpenBlock] = useState(false);
   const [openReport, setOpenReport] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // API URL dari env
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Ambil hasil scan dari backend
   const fetchResult = async () => {
     try {
       const res = await fetch(
@@ -50,12 +49,11 @@ export default function UrlAnalysis() {
       const data = await res.json();
       setIsSafe(data.status === "Safe");
     } catch (err) {
-      console.error("Failed get scan result:", err);
+      console.error(err);
       setIsSafe(false);
     }
   };
 
-  // Simulasi scanning 0 → 100%
   useEffect(() => {
     let total = 0;
     const interval = setInterval(() => {
@@ -65,7 +63,7 @@ export default function UrlAnalysis() {
       if (total >= 100) {
         clearInterval(interval);
         setDone(true);
-        fetchResult(); // Ambil hasil dari backend
+        fetchResult();
       }
     }, 250);
 
@@ -74,52 +72,69 @@ export default function UrlAnalysis() {
 
   const handleBlock = async () => {
     try {
-      const res = await fetch(`${API_URL}/phishing/block`, {
+      await fetch(`${API_URL}/phishing/block`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: targetUrl }),
       });
-      if (!res.ok) throw new Error("Failed to block URL");
-
-      blockURL(targetUrl); // simpan lokal
+      blockURL(targetUrl);
       setOpenBlock(true);
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Gagal memblokir URL");
     }
   };
 
   const handleReport = async () => {
     try {
-      const res = await fetch(`${API_URL}/phishing/report`, {
+      await fetch(`${API_URL}/phishing/report`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: targetUrl }),
       });
-      if (!res.ok) throw new Error("Failed to report URL");
-
-      reportURL(targetUrl); // simpan lokal
+      reportURL(targetUrl);
       setOpenReport(true);
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Gagal melaporkan URL");
     }
   };
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-        <Header
-          title="URL Analysis"
-          subtitle="AI-powered security scan"
-          onLogout={() => navigate("/login")}
-        />
+      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px]">
+        {/* HEADER */}
+        <header className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden bg-gray-900 text-white p-2 rounded-lg"
+            >
+              <Shield className="w-6 h-6" />
+            </button>
+
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                URL Analysis
+              </h1>
+              <p className="text-lg text-gray-700 hidden md:block">
+                AI-powered security scan
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate("/login")}
+            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
+          >
+            <LogOut className="w-6 h-6" />
+            <span className="hidden sm:block font-semibold">Logout</span>
+          </button>
+        </header>
 
         <button
           onClick={() => navigate("/antiphishing")}
-          className="flex items-center gap-1 mb-6 text-white hover:opacity-70"
+          className="flex items-center gap-1 mb-6 text-gray-900 hover:opacity-70"
         >
           <ArrowLeft /> Back
         </button>
@@ -130,14 +145,14 @@ export default function UrlAnalysis() {
 
           {!done && (
             <div className="bg-[#1D1D1D] rounded-lg p-5 border border-[#3A3A3A]">
-              <div className="w-full bg-[#3A3A3A] h-3 rounded-full overflow-hidden">
+              <div className="w-full bg-[#3A3A3A] h-3 rounded-full">
                 <div
-                  className="h-3 bg-[#5CC8BA] transition-all duration-200"
+                  className="h-3 bg-[#5CC8BA] transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>
               <p className="text-sm mt-3 opacity-80">
-                Scanning for threats… {progress}%
+                Scanning… {progress}%
               </p>
             </div>
           )}
@@ -145,7 +160,7 @@ export default function UrlAnalysis() {
           {done && isSafe !== null && (
             <div className="bg-[#1D1D1D] rounded-lg p-5 border border-[#3A3A3A] flex flex-col gap-4">
               <div
-                className={`border rounded-lg p-4 flex items-start gap-3 ${
+                className={`border rounded-lg p-4 flex gap-3 ${
                   isSafe
                     ? "border-green-500 bg-green-900/20"
                     : "border-red-500 bg-red-900/20"
@@ -167,113 +182,57 @@ export default function UrlAnalysis() {
                 </div>
               </div>
 
-              <div className="mt-1">
-                <p className="text-sm font-semibold mb-2">Recommendations</p>
-                {isSafe ? (
-                  <ul className="text-sm ml-3 opacity-80 list-disc">
-                    <li>Safe to access</li>
-                    <li>No suspicious signatures detected</li>
-                    <li>Verified SSL & normal traffic</li>
-                  </ul>
-                ) : (
-                  <ul className="text-sm ml-3 opacity-80 list-disc">
-                    <li>Do not input personal data</li>
-                    <li>Website shows phishing patterns</li>
-                    <li>Avoid login or form submissions</li>
-                  </ul>
-                )}
-              </div>
-
               {!isSafe && (
-                <div className="flex gap-4 mt-3">
+                <div className="flex gap-4">
                   <Button
-                    variant="destructive"
                     onClick={handleBlock}
-                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+                    className="bg-red-600 hover:bg-red-700 text-white flex gap-2"
                   >
-                    <ShieldBan className="w-5 h-5" /> Block Access
+                    <ShieldBan className="w-5 h-5" /> Block
                   </Button>
 
                   <Button
                     onClick={handleReport}
-                    className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white"
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white flex gap-2"
                   >
-                    <Bug className="w-5 h-5" /> Report URL
+                    <Bug className="w-5 h-5" /> Report
                   </Button>
                 </div>
               )}
             </div>
           )}
-
-          {done && (
-            <button
-              onClick={() => navigate("/antiphishing")}
-              className="w-full bg-[#5CC8BA] hover:bg-[#4DB8AA] text-white font-semibold py-3 rounded-lg mt-6"
-            >
-              Continue
-            </button>
-          )}
         </div>
       </main>
 
-      {/* MODAL BLOCK */}
+      {/* MODALS */}
       <Dialog open={openBlock} onOpenChange={setOpenBlock}>
-        <DialogContent className="bg-[#1E1E1E] text-white border border-gray-700">
+        <DialogContent className="bg-[#1E1E1E] text-white">
           <DialogHeader>
             <DialogTitle className="text-red-400 flex gap-2 items-center">
-              <ShieldBan /> Block This URL?
+              <ShieldBan /> URL Blocked
             </DialogTitle>
-            <DialogDescription className="text-gray-300">
-              URL ini terdeteksi sebagai situs berbahaya. Memblokirnya akan
-              mencegah kamu mengaksesnya kembali dari sistem ini.
+            <DialogDescription>
+              URL berhasil diblokir dari sistem.
             </DialogDescription>
           </DialogHeader>
-
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setOpenBlock(false)}
-              className="border-gray-600 text-gray-300"
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-red-600 hover:bg-red-700 text-white"
-              onClick={() => setOpenBlock(false)}
-            >
-              Block Now
-            </Button>
+            <Button onClick={() => setOpenBlock(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* MODAL REPORT */}
       <Dialog open={openReport} onOpenChange={setOpenReport}>
-        <DialogContent className="bg-[#1E1E1E] text-white border border-gray-700">
+        <DialogContent className="bg-[#1E1E1E] text-white">
           <DialogHeader>
             <DialogTitle className="text-yellow-400 flex gap-2 items-center">
-              <Bug /> Report Suspicious URL
+              <Bug /> Report Submitted
             </DialogTitle>
-            <DialogDescription className="text-gray-300">
-              Laporkan URL ini kepada sistem kami agar dapat dianalisis lebih
-              lanjut.
+            <DialogDescription>
+              Terima kasih atas laporan kamu.
             </DialogDescription>
           </DialogHeader>
-
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setOpenReport(false)}
-              className="border-gray-600 text-gray-300"
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-yellow-600 hover:bg-yellow-700 text-white"
-              onClick={() => setOpenReport(false)}
-            >
-              Submit Report
-            </Button>
+            <Button onClick={() => setOpenReport(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

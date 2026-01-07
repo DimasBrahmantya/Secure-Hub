@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import StatCard from "../../components/StatCard";
 import NotificationItem from "../../components/NotificationItem";
-import { Activity, AlertTriangle, CalendarCheck, Bell, LogOut } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  CalendarCheck,
+  Bell,
+  LogOut,
+  Menu,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Monitoring() {
@@ -11,17 +18,14 @@ export default function Monitoring() {
 
   const [activities, setActivities] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ===============================
-  // FETCH MONITORING LOGS
-  // ===============================
   const fetchMonitoring = async () => {
     try {
       const res = await fetch(`${API_URL}/monitoring`);
       if (!res.ok) throw new Error("Failed to fetch monitoring logs");
-
       const data = await res.json();
       setActivities(data.filter((d: any) => d.type === "activity"));
       setNotifications(data.filter((d: any) => d.type === "notification"));
@@ -32,18 +36,29 @@ export default function Monitoring() {
 
   useEffect(() => {
     fetchMonitoring();
-    const interval = setInterval(fetchMonitoring, 5000); // auto refresh
+    const interval = setInterval(fetchMonitoring, 5000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
-        {/* PAGE HEADER */}
+      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px]">
+        {/* MOBILE MENU */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
+          >
+            <Menu className="w-5 h-5" />
+            Menu
+          </button>
+        </div>
+
+        {/* HEADER */}
         <header className="flex justify-between items-start mb-10">
-          <div className="flex flex-col gap-2">
+          <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
               Monitoring & Notifications
             </h1>
@@ -54,54 +69,48 @@ export default function Monitoring() {
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
+            className="hidden md:flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
           >
             <LogOut className="w-6 h-6" />
-            <span className="font-semibold">Logout</span>
+            Logout
           </button>
         </header>
 
-        {/* TOP STAT CARDS (3 ITEMS) */}
+        {/* STAT CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard
             title="Active Sessions"
             value="12"
             subtitle="Currently Online"
-            icon={<Activity className="text-blue-500 w-10 h-10" />}
+            icon={<Activity className="w-10 h-10 text-blue-500" />}
           />
-
           <StatCard
             title="Pending Alerts"
             value={notifications.length.toString()}
             subtitle="Require Attention"
-            icon={<AlertTriangle className="text-red-500 w-10 h-10" />}
+            icon={<AlertTriangle className="w-10 h-10 text-red-500" />}
           />
-
           <StatCard
             title="Events Today"
             value={activities.length.toString()}
             subtitle="Security events logged"
-            icon={<CalendarCheck className="text-yellow-500 w-10 h-10" />}
+            icon={<CalendarCheck className="w-10 h-10 text-yellow-500" />}
           />
         </div>
 
-        {/* MAIN CONTENT: 2 COLUMNS */}
+        {/* CONTENT */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10">
-          {/* LEFT COLUMN: ACTIVITY LOG */}
-          <div className="col-span-2 bg-[#2c2c2c] border border-black rounded-xl p-5 flex flex-col gap-4">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <div className="col-span-2 bg-[#2c2c2c] rounded-xl p-5 border border-black">
+            <h2 className="text-xl font-bold text-white flex gap-2 items-center">
               <Activity className="w-6 h-6 text-blue-500" />
               Activity Log
             </h2>
-            <p className="text-sm text-gray-300">
-              Real-time security events and system activities.
-            </p>
 
-            <div className="flex flex-col gap-4 mt-2 border-t border-white-700 pt-4 max-h-[400px] overflow-y-auto">
+            <div className="mt-4 max-h-[400px] overflow-y-auto flex flex-col gap-4">
               {activities.length === 0 ? (
                 <p className="text-gray-400 text-sm">No activity found.</p>
               ) : (
-                activities.map((item: any) => (
+                activities.map((item) => (
                   <NotificationItem
                     key={item._id}
                     title={item.title}
@@ -113,21 +122,19 @@ export default function Monitoring() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: NOTIFICATIONS */}
-          <div className="w-full bg-[#2c2c2c] border border-black rounded-xl p-5 flex flex-col gap-5">
-            <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+          <div className="bg-[#2c2c2c] rounded-xl p-5 border border-black">
+            <h2 className="text-xl font-bold text-white flex gap-2 items-center">
               <Bell className="w-6 h-6 text-red-500" />
               Notifications
             </h2>
-            <p className="text-sm text-gray-300">
-              Important alerts and updates
-            </p>
 
-            <div className="flex flex-col gap-4 mt-2 border-t border-white-700 pt-4 max-h-[400px] overflow-y-auto">
+            <div className="mt-4 max-h-[400px] overflow-y-auto flex flex-col gap-4">
               {notifications.length === 0 ? (
-                <p className="text-gray-400 text-sm">No notifications available.</p>
+                <p className="text-gray-400 text-sm">
+                  No notifications available.
+                </p>
               ) : (
-                notifications.map((item: any) => (
+                notifications.map((item) => (
                   <NotificationItem
                     key={item._id}
                     title={item.title}

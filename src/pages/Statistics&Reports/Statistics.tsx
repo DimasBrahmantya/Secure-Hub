@@ -26,6 +26,7 @@ export default function Statistics() {
 
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -74,23 +75,42 @@ export default function Statistics() {
 
   return (
     <div className="flex w-screen min-h-screen bg-white overflow-x-hidden">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10 text-black">
-        {/* HEADER */}
-        <header className="flex justify-between items-start mb-10">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-4xl font-bold">Statistics & Reports</h1>
-            <p className="text-gray-600 mt-2">
-              Detailed analytics and phishing detection reports
-            </p>
+      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px] text-black">
+        <header className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-3">
+            {/* Mobile sidebar button */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden bg-gray-900 text-white p-2 rounded-lg"
+            >
+              {/* pakai icon apa saja, ini konsisten */}
+              <svg className="w-6 h-6" viewBox="0 0 48 48" fill="none">
+                <path
+                  d="M24 44C24 44 40 36 40 24V10L24 4L8 10V24C8 36 24 44 24 44Z"
+                  stroke="white"
+                  strokeWidth="3"
+                />
+              </svg>
+            </button>
+
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold">
+                Statistics & Reports
+              </h1>
+              <p className="text-gray-600 hidden md:block mt-1">
+                Detailed analytics and phishing detection reports
+              </p>
+            </div>
           </div>
+
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
           >
             <LogOut className="w-6 h-6" />
-            <span className="font-semibold">Logout</span>
+            <span className="font-semibold hidden sm:block">Logout</span>
           </button>
         </header>
 

@@ -3,12 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import StatCard from "../../components/StatCard";
-import {
-  generateBackup,
-  deleteBackup,
-  getBackups,
-} from "../../api/backup";
-import { Trash2, UploadCloud, Database } from "lucide-react";
+import { generateBackup, deleteBackup, getBackups } from "../../api/backup";
+import { Trash2, UploadCloud, Database, Menu } from "lucide-react";
 
 function formatAgo(iso: string) {
   const then = new Date(iso).getTime();
@@ -28,9 +24,10 @@ export default function BackupIndex() {
   const [backups, setBackups] = useState<any[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [backupFile, setBackupFile] = useState<File | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ===============================
-  // LOAD BACKUPS FROM BACKEND
+  // LOAD BACKUPS
   // ===============================
   const load = async () => {
     const data = await getBackups();
@@ -47,19 +44,13 @@ export default function BackupIndex() {
   const handleCreateBackup = async (file: File) => {
     try {
       const result = await generateBackup(file);
-
-      console.log("BACKUP RESULT:", result);
-
       if (!result?._id) {
         alert("Backup failed");
         return;
       }
 
       await load();
-
-      navigate("/backup/progress", {
-        state: { id: result._id },
-      });
+      navigate("/backup/progress", { state: { id: result._id } });
     } catch (err) {
       console.error("Backup error:", err);
       alert("Backup failed");
@@ -69,16 +60,12 @@ export default function BackupIndex() {
   // ===============================
   // DELETE BACKUP
   // ===============================
-  const handleDelete = (id: string) => {
-    setConfirmDeleteId(id);
-  };
+  const handleDelete = (id: string) => setConfirmDeleteId(id);
 
   const confirmDelete = async () => {
     if (!confirmDeleteId) return;
-
     await deleteBackup(confirmDeleteId);
     await load();
-
     setConfirmDeleteId(null);
     navigate("/delete/success");
   };
@@ -90,60 +77,71 @@ export default function BackupIndex() {
   const latestBackup = backups[0]?.size
     ? `${(backups[0].size / 1024).toFixed(2)} KB`
     : "0 KB";
-  const readyCount = totalBackups;
 
   return (
-    <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      <Sidebar />
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
+      {/* SIDEBAR */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
+      {/* MAIN */}
+      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px]">
+        {/* MOBILE MENU */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
+          >
+            <Menu className="w-5 h-5" />
+            Menu
+          </button>
+        </div>
+
         <Header
           title="Backup & Restore"
           subtitle="Manage data backups"
           onLogout={() => navigate("/login")}
         />
 
-        {/* ===== STAT CARDS ===== */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        {/* ===== STAT CARDS (RESPONSIVE) ===== */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
           <StatCard
             title="Total Backups"
             value={String(totalBackups)}
             subtitle="All stored backups"
-            icon={<Database className="w-10 h-10 text-orange-500" />}
+            icon={<Database className="w-8 h-8 text-orange-500" />}
           />
 
           <StatCard
             title="Latest Backup Size"
             value={latestBackup}
             subtitle="Most recent file"
-            icon={<UploadCloud className="w-10 h-10 text-blue-500" />}
+            icon={<UploadCloud className="w-8 h-8 text-blue-500" />}
           />
 
           <StatCard
             title="Ready Backups"
-            value={String(readyCount)}
+            value={String(totalBackups)}
             subtitle="Available to restore"
-            icon={<Database className="w-10 h-10 text-orange-500" />}
+            icon={<Database className="w-8 h-8 text-orange-500" />}
           />
         </div>
 
-        {/* ===== CREATE BACKUP AREA ===== */}
-        <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black mb-6 mt-10 flex flex-col gap-4">
+        {/* ===== CREATE BACKUP ===== */}
+        <div className="bg-[#2C2C2C] p-4 sm:p-5 rounded-xl border border-black mt-8 flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <Database className="w-7 h-7 text-orange-500" />
+            <Database className="w-6 h-6 sm:w-7 sm:h-7 text-orange-500" />
             <div>
-              <h2 className="text-2xl font-bold">Create New Backups</h2>
-              <p className="text-white-600 mt-1">
-                Create, restore, or delete backups
+              <h2 className="text-xl sm:text-2xl font-bold text-white">
+                Create New Backup
+              </h2>
+              <p className="text-gray-300 text-sm">
+                Upload and manage backup files
               </p>
             </div>
           </div>
 
-          {/* === FILE INPUT UNTUK BACKUP === */}
-          <label className="block">
-            <p className="text-white text-sm mb-1">
-              Upload Backup File (.zip):
-            </p>
+          <label>
+            <p className="text-white text-sm mb-1">Upload Backup File (.zip)</p>
             <input
               type="file"
               accept=".zip"
@@ -152,7 +150,6 @@ export default function BackupIndex() {
             />
           </label>
 
-          {/* === BACKUP NOW === */}
           <button
             onClick={() => {
               if (!backupFile) {
@@ -161,15 +158,16 @@ export default function BackupIndex() {
               }
               handleCreateBackup(backupFile);
             }}
-            className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold"
+            className="inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-lg font-semibold"
           >
-            <UploadCloud className="w-5 h-5 text-blue-500" /> Backup Now
+            <UploadCloud className="w-5 h-5" />
+            Backup Now
           </button>
         </div>
 
         {/* ===== BACKUP TABLE ===== */}
-        <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black">
-          <table className="w-full text-left">
+        <div className="bg-[#2C2C2C] p-4 rounded-xl border border-black mt-6 overflow-x-auto">
+          <table className="w-full text-left min-w-[720px] whitespace-nowrap">
             <thead>
               <tr className="text-gray-300 border-b border-gray-700/60">
                 <th className="py-3">Name</th>
@@ -184,7 +182,7 @@ export default function BackupIndex() {
               {backups.length === 0 && (
                 <tr>
                   <td colSpan={5} className="py-6 text-gray-400">
-                    No backups yet. Create one using "Backup Now".
+                    No backups yet.
                   </td>
                 </tr>
               )}
@@ -194,15 +192,17 @@ export default function BackupIndex() {
                   key={b._id}
                   className="text-white border-b border-gray-700/40"
                 >
-                  <td className="py-3">{b.fileName}</td>
-                  <td className="py-3">{(b.size / 1024).toFixed(2)} KB</td>
-                  <td className="py-3 text-gray-300">
+                  <td className="py-3 text-sm sm:text-base">{b.fileName}</td>
+                  <td className="py-3 text-sm sm:text-base">
+                    {(b.size / 1024).toFixed(2)} KB
+                  </td>
+                  <td className="py-3 text-sm text-gray-300">
                     {formatAgo(b.createdAt)}
                   </td>
+
                   <td className="py-3 capitalize">{b.status}</td>
 
-                  <td className="py-3 capitalize">
-                    {b.status === "ready"}
+                  <td className="py-3">
                     <div className="flex gap-2">
                       <button
                         onClick={() =>
@@ -210,7 +210,7 @@ export default function BackupIndex() {
                             state: { id: b._id, fileName: b.fileName },
                           })
                         }
-                        className="px-3 py-1 rounded bg-[#5CC8BA] text-white font-semibold"
+                        className="px-3 py-1 rounded bg-teal-500 text-white font-semibold"
                       >
                         Restore
                       </button>
@@ -219,7 +219,7 @@ export default function BackupIndex() {
                         onClick={() => handleDelete(b._id)}
                         className="px-3 py-1 rounded bg-red-700 hover:bg-red-800 text-white"
                       >
-                        <Trash2 className="w-4 h-4 inline-block" /> Delete
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -232,17 +232,18 @@ export default function BackupIndex() {
         {/* ===== DELETE MODAL ===== */}
         {confirmDeleteId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-[#2c2c2c] p-6 rounded-lg w-full max-w-md shadow">
-              <h3 className="text-lg font-semibold mb-3">Confirm Delete</h3>
-              <p className="text-sm text-whitw-700 mb-4">
-                Are you sure you want to delete this backup? This action cannot
-                be undone.
+            <div className="bg-[#2c2c2c] p-6 rounded-lg w-full max-w-md">
+              <h3 className="text-lg font-semibold mb-3 text-white">
+                Confirm Delete
+              </h3>
+              <p className="text-sm text-gray-300 mb-4">
+                This action cannot be undone.
               </p>
 
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setConfirmDeleteId(null)}
-                  className="px-4 py-2 rounded border"
+                  className="px-4 py-2 rounded border text-white"
                 >
                   Cancel
                 </button>

@@ -1,16 +1,29 @@
-// src/pages/delete/success.tsx
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Menu } from "lucide-react";
+import { useState } from "react";
 
 export default function DeleteSuccess() {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      <Sidebar />
-      <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px]">
+        {/* MOBILE MENU */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
+          >
+            <Menu className="w-5 h-5" />
+            Menu
+          </button>
+        </div>
+
         <Header
           title="Delete Backup"
           subtitle="Backup removed"
@@ -23,18 +36,22 @@ export default function DeleteSuccess() {
               <CheckCircle className="w-6 h-6 text-green-300" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Backup Deleted</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Backup Deleted
+              </h3>
               <p className="text-gray-300 mt-1">
                 The backup has been successfully deleted.
               </p>
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3">
-            <button onClick={() => navigate("/backup")} 
-            className="w-full inline-flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-md font-semibold">
+          <div className="mt-6">
+            <button
+              onClick={() => navigate("/backup")}
+              className="w-full bg-teal-400 hover:bg-teal-500 text-white px-4 py-3 rounded-lg font-semibold"
+            >
               Back to backups
-              </button>
+            </button>
           </div>
         </div>
       </main>

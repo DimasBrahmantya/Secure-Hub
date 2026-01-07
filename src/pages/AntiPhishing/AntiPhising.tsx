@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LogOut,
   CheckCircle,
@@ -6,10 +7,10 @@ import {
   TriangleAlert,
   Search,
 } from "lucide-react";
-import StatCard from "../../components/StatCard";
+
 import Sidebar from "../../components/Sidebar";
+import StatCard from "../../components/StatCard";
 import RecentScans from "../../components/RecentScans";
-import { useNavigate } from "react-router-dom";
 
 export default function AntiPhishing() {
   type Scan = {
@@ -21,16 +22,18 @@ export default function AntiPhishing() {
     reported?: boolean;
   };
 
+  const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [url, setUrl] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const [stats, setStats] = useState({
     safe: 0,
     warning: 0,
     danger: 0,
     blocked: 0,
   });
-
-  const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleLogout = () => navigate("/login");
 
@@ -58,9 +61,7 @@ export default function AntiPhishing() {
     loadStats();
   }, []);
 
-  const refreshAfterAction = () => {
-    loadStats();
-  };
+  const refreshAfterAction = () => loadStats();
 
   // ========================== SCAN URL ==========================
   const handleCheck = async (manualURL?: string) => {
@@ -96,15 +97,31 @@ export default function AntiPhishing() {
 
   return (
     <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      <Sidebar />
+      {/* SIDEBAR */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-      <main className="flex-1 ml-[296px] p-6 md:p-8 lg:p-10">
+      {/* MAIN */}
+      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px]">
+        {/* MOBILE MENU */}
+        <div className="lg:hidden mb-6">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
+          >
+            Menu
+          </button>
+        </div>
+
+        {/* HEADER */}
         <header className="flex justify-between items-start mb-10">
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
               Anti-Phishing Scanner
             </h1>
-            <p className="text-lg text-gray-700">
+            <p className="text-base md:text-lg text-gray-700">
               AI-powered URL analysis and threat detection
             </p>
           </div>
@@ -114,13 +131,13 @@ export default function AntiPhishing() {
             className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
           >
             <LogOut className="w-6 h-6" />
-            Logout
+            <span className="hidden sm:block">Logout</span>
           </button>
         </header>
 
-        <div className="w-full text-white flex flex-col gap-6">
+        <div className="w-full flex flex-col gap-6">
           {/* ========================== STAT CARDS ========================== */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <StatCard
               title="Safe URLs"
               value={String(stats.safe)}
@@ -144,24 +161,27 @@ export default function AntiPhishing() {
           </div>
 
           {/* ========================== URL INPUT ========================== */}
-          <div className="bg-[#2C2C2C] border-black rounded-xl p-5 flex flex-col gap-4 ">
-            <label className="text-2xl font-semibold ">Analyze URL</label>
-            <p className="text-sm text-white-400">
+          <div className="bg-[#2C2C2C] rounded-xl p-5 flex flex-col gap-4 text-white">
+            <label className="text-xl sm:text-2xl font-semibold">
+              Analyze URL
+            </label>
+
+            <p className="text-sm opacity-80">
               Enter a URL to scan for potential phishing threats
             </p>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col md:flex-row gap-3">
               <input
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="contoh.com"
-                className="flex-1 bg-white-400 border border-white-700 rounded-lg px-4 py-3 text-sm text-white"
+                className="flex-1 bg-[#1E1E1E] border border-gray-700 rounded-lg px-4 py-2 sm:py-3 text-sm text-white"
               />
 
               <button
                 onClick={() => handleCheck()}
-                className="flex items-center gap-2 bg-teal-400 hover:bg-teal-500 rounded-lg px-6 py-3 font-semibold text-white"
+                className="flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 rounded-lg px-5 py-2 sm:px-6 sm:py-3 font-semibold text-white"
               >
                 <Search className="w-5 h-5" />
                 Analyze
