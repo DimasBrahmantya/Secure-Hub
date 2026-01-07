@@ -6,6 +6,8 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 //import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import { Login } from "./pages/Login/Login";
+import TwoFactorAuth from "./pages/2FA/TwoFactorAuth";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import AntiPhishing from "./pages/AntiPhishing/AntiPhising";
@@ -33,6 +35,8 @@ export default function App() {
         <Toaster position="bottom-right" richColors/>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/2fa" element={<TwoFactorAuth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/antiphishing" element={<AntiPhishing/>}/>
           <Route path="/analysis" element={<UrlAnalysis/>}/>
