@@ -5,7 +5,6 @@ import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 //import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
 import { Login } from "./pages/Login/Login";
 import TwoFactorAuth from "./pages/2FA/TwoFactorAuth";
 import NotFound from "./pages/NotFound";
@@ -23,6 +22,7 @@ import AdminPanel from "./pages/AdminPanel/AdminPanel";
 import UserManagement from "./pages/UserManagement/UserManagement";
 import Statistics from "./pages/Statistics&Reports/Statistics";
 import Monitoring from "./pages/Monitoring & Notification/Monitoring";
+import SpeedInsights from "./components/SpeedInsights";
 
 
 const queryClient = new QueryClient();
@@ -31,6 +31,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <SpeedInsights />
         <Sonner />
         <Toaster position="bottom-right" richColors/>
         <Routes>
