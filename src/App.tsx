@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import AntiPhishing from "./pages/AntiPhishing/AntiPhising";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import UrlAnalysis from "./pages/Analysis/Analysis";
 import BackupIndex from "./pages/Backup/Backup";
 import BackupProgress from "./pages/Backup/Progress";
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Analytics />
       </TooltipProvider>
     </QueryClientProvider>
   );
