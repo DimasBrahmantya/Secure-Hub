@@ -6,6 +6,7 @@ import {
   Shield,
   TriangleAlert,
   Search,
+  Menu,
 } from "lucide-react";
 
 import Sidebar from "../../components/Sidebar";
@@ -111,7 +112,7 @@ export default function AntiPhishing() {
             onClick={() => setSidebarOpen(true)}
             className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
           >
-            Menu
+            <Menu className="w-5 h-5" />
           </button>
         </div>
 

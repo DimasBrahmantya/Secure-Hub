@@ -34,7 +34,7 @@ export default function App() {
         <Sonner />
         <Toaster position="bottom-right" richColors/>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/2fa" element={<TwoFactorAuth />} />
           <Route path="/dashboard" element={<Dashboard />} />

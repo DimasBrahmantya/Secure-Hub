@@ -3,9 +3,6 @@ import {
   Shield,
   Database,
   TrendingUp,
-  Settings,
-  Users,
-  BarChart3,
   X,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -24,12 +21,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: Shield, label: "Anti-Phishing", navigateTo: "/antiphishing" },
     { icon: Database, label: "Backup & Restore", navigateTo: "/backup" },
     { icon: TrendingUp, label: "Monitoring", navigateTo: "/monitoring" },
-  ];
-
-  const adminItems = [
-    { icon: Settings, label: "Admin Panel", navigateTo: "/admin" },
-    { icon: Users, label: "User Management", navigateTo: "/users" },
-    { icon: BarChart3, label: "Statistics", navigateTo: "/statistics" },
   ];
 
   return (
@@ -83,27 +74,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Main Menu */}
         <span className="text-xs text-white px-3">Main Menu</span>
         {menuItems.map((item, i) => {
-          const active = location.pathname === item.navigateTo;
-          return (
-            <button
-              key={i}
-              onClick={() => {
-                navigate(item.navigateTo);
-                onClose();
-              }}
-              className={`flex items-center gap-3 px-4 py-2 rounded
-                ${active ? "bg-[#3C3C3C]" : "hover:bg-[#3C3C3C]"}
-              `}
-            >
-              <item.icon className="w-6 h-6 text-white" />
-              <span className="text-white">{item.label}</span>
-            </button>
-          );
-        })}
-
-        {/* Admin */}
-        <span className="text-xs text-white px-3 mt-4">Administration</span>
-        {adminItems.map((item, i) => {
           const active = location.pathname === item.navigateTo;
           return (
             <button
