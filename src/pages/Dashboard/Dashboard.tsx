@@ -1,5 +1,3 @@
-// src/pages/Dashboard/Dashboard.tsx
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import StatCard from "../../components/StatCard";
 import RecentActivity from "../../components/RecentActivity";
@@ -9,7 +7,6 @@ import {
   Database,
   Activity,
   TrendingUp,
-  LogOut,
   CheckCircle,
   Menu,
 } from "lucide-react";
@@ -21,7 +18,6 @@ import {
 } from "../../api/dashboard";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
 
   const [topStats, setTopStats] = useState<any[]>([]);
   const [dashboardStats, setDashboardStats] = useState<any>(null);
@@ -35,7 +31,6 @@ export default function Dashboard() {
 
   const [activity, setActivity] = useState<ActivityItem[]>([]);
 
-  const handleLogout = () => navigate("/login");
 
   useEffect(() => {
     const load = async () => {
@@ -150,7 +145,6 @@ export default function Dashboard() {
             className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
           >
             <Menu className="w-5 h-5" />
-            Menu
           </button>
         </div>
 
@@ -164,14 +158,6 @@ export default function Dashboard() {
               Monitor and manage your security infrastructure
             </p>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
-          >
-            <LogOut className="w-6 h-6" />
-            <span className="hidden sm:block">Logout</span>
-          </button>
         </header>
 
         {/* TOP STATS */}

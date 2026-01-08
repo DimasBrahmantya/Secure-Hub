@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  LogOut,
   CheckCircle,
   Shield,
   TriangleAlert,
@@ -36,7 +35,6 @@ export default function AntiPhishing() {
     blocked: 0,
   });
 
-  const handleLogout = () => navigate("/login");
 
   // ========================== FETCH STATISTICS ==========================
   const loadStats = async () => {
@@ -105,7 +103,7 @@ export default function AntiPhishing() {
       />
 
       {/* MAIN */}
-      <main className="flex-1 p-6 md:p-8 lg:p-10 lg:ml-[296px]">
+      <main className="flex-1 p-4 md:p-8 lg:p-10 lg:ml-[296px]">
         {/* MOBILE MENU */}
         <div className="lg:hidden mb-6">
           <button
@@ -119,26 +117,18 @@ export default function AntiPhishing() {
         {/* HEADER */}
         <header className="flex justify-between items-start mb-10">
           <div className="flex flex-col gap-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
               Anti-Phishing Scanner
             </h1>
-            <p className="text-base md:text-lg text-gray-700">
+            <p className="text-sm md:text-base lg:text-lg text-gray-700">
               AI-powered URL analysis and threat detection
             </p>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:opacity-80"
-          >
-            <LogOut className="w-6 h-6" />
-            <span className="hidden sm:block">Logout</span>
-          </button>
         </header>
 
         <div className="w-full flex flex-col gap-6">
           {/* ========================== STAT CARDS ========================== */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             <StatCard
               title="Safe URLs"
               value={String(stats.safe)}
@@ -162,12 +152,12 @@ export default function AntiPhishing() {
           </div>
 
           {/* ========================== URL INPUT ========================== */}
-          <div className="bg-[#2C2C2C] rounded-xl p-5 flex flex-col gap-4 text-white">
-            <label className="text-xl sm:text-2xl font-semibold">
+          <div className="bg-[#2C2C2C] rounded-xl p-4 md:p-5 flex flex-col gap-4 text-white">
+            <label className="text-lg md:text-xl lg:text-2xl font-semibold">
               Analyze URL
             </label>
 
-            <p className="text-sm opacity-80">
+            <p className="text-xs md:text-sm opacity-80">
               Enter a URL to scan for potential phishing threats
             </p>
 
@@ -177,12 +167,12 @@ export default function AntiPhishing() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="contoh.com"
-                className="flex-1 bg-[#1E1E1E] border border-gray-700 rounded-lg px-4 py-2 sm:py-3 text-sm text-white"
+                className="flex-1 bg-[#1E1E1E] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white"
               />
 
               <button
                 onClick={() => handleCheck()}
-                className="flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 rounded-lg px-5 py-2 sm:px-6 sm:py-3 font-semibold text-white"
+                className="flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 rounded-lg px-5 py-2 md:px-6 font-semibold text-white whitespace-nowrap"
               >
                 <Search className="w-5 h-5" />
                 Analyze

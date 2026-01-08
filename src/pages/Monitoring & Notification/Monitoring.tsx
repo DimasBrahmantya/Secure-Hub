@@ -7,14 +7,11 @@ import {
   AlertTriangle,
   CalendarCheck,
   Bell,
-  LogOut,
   Menu,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+
 
 export default function Monitoring() {
-  const navigate = useNavigate();
-  const handleLogout = () => navigate("/login");
 
   const [activities, setActivities] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -66,14 +63,6 @@ export default function Monitoring() {
               Real-time activity logs and system alerts
             </p>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="hidden md:flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
-          >
-            <LogOut className="w-6 h-6" />
-            Logout
-          </button>
         </header>
 
         {/* STAT CARDS */}

@@ -21,7 +21,7 @@ import Statistics from "./pages/Statistics&Reports/Statistics";
 import Monitoring from "./pages/Monitoring & Notification/Monitoring";
 import { Analytics } from "@vercel/analytics/react";
 import RouteAnalytics from "./RouteAnalytics";
-
+import SpeedInsights from "./components/SpeedInsights";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +29,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <SpeedInsights />
         <Sonner />
         <Toaster position="bottom-right" richColors/>
         <RouteAnalytics />
