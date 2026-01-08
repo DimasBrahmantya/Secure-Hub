@@ -49,7 +49,6 @@ export default function Monitoring() {
             className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
           >
             <Menu className="w-5 h-5" />
-            Menu
           </button>
         </div>
 

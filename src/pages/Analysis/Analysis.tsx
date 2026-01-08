@@ -151,9 +151,7 @@ export default function UrlAnalysis() {
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-sm mt-3 opacity-80">
-                Scanning… {progress}%
-              </p>
+              <p className="text-sm mt-3 opacity-80">Scanning… {progress}%</p>
             </div>
           )}
 
@@ -174,7 +172,9 @@ export default function UrlAnalysis() {
 
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {isSafe ? "Site Appears Safe" : "Potentially Dangerous Site"}
+                    {isSafe
+                      ? "Site Appears Safe"
+                      : "Potentially Dangerous Site"}
                   </h3>
                   <p className="text-sm opacity-80">
                     Threat score: {isSafe ? "9/10" : "3/10"}
@@ -199,6 +199,14 @@ export default function UrlAnalysis() {
                   </Button>
                 </div>
               )}
+              {done && (
+                <button
+                  onClick={() => navigate("/antiphishing")}
+                  className="w-full bg-[#5CC8BA] hover:bg-[#4DB8AA] text-white font-semibold py-3 rounded-lg mt-6"
+                >
+                  Continue
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -216,7 +224,14 @@ export default function UrlAnalysis() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setOpenBlock(false)}>OK</Button>
+            <Button
+              onClick={() => {
+                setOpenBlock(false);
+                navigate("/antiphishing");
+              }}
+            >
+              OKE
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -232,7 +247,14 @@ export default function UrlAnalysis() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setOpenReport(false)}>OK</Button>
+            <Button
+              onClick={() => {
+                setOpenReport(false);
+                navigate("/antiphishing");
+              }}
+            >
+              OKE
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
