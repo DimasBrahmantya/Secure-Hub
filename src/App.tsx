@@ -22,6 +22,7 @@ import Monitoring from "./pages/Monitoring & Notification/Monitoring";
 import { Analytics } from "@vercel/analytics/react";
 import RouteAnalytics from "./RouteAnalytics";
 import SpeedInsights from "./components/SpeedInsights";
+import GoogleAnalytics from "./GoogleAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ export default function App() {
         <Sonner />
         <Toaster position="bottom-right" richColors/>
         <RouteAnalytics />
+        <GoogleAnalytics />
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />

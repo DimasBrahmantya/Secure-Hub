@@ -7,6 +7,9 @@ import App from './App';
 import './styles/globals.css';
 import './styles/theme.css';
 import './index.css';
+import ReactGA from "react-ga4";
+
+ReactGA.initialize("G-XNC90DEJTW"); // ganti pake Measurement ID
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
