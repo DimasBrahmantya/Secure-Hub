@@ -6,7 +6,6 @@ import {
   Shield,
   Database,
   Activity,
-  TrendingUp,
   CheckCircle,
   Menu,
 } from "lucide-react";
@@ -104,25 +103,25 @@ export default function Dashboard() {
           buttonText: "View Notifications",
           navigateTo: "/monitoring",
         },
-        {
-          icon: (
-            <TrendingUp className="w-8 h-8 text-green-500" strokeWidth={3} />
-          ),
-          title: "Admin Panel",
-          description: "System configuration and management",
-          stats: [
-            {
-              label: "Total Users",
-              value: String(dashboardStats.admin?.totalUsers ?? "—"),
-            },
-            {
-              label: "AI Sensitivity",
-              value: dashboardStats.admin?.aiSensitivity ?? "—",
-            },
-          ],
-          buttonText: "Admin Panel",
-          navigateTo: "/admin",
-        },
+        // {
+        //   icon: (
+        //     <TrendingUp className="w-8 h-8 text-green-500" strokeWidth={3} />
+        //   ),
+        //   title: "Admin Panel",
+        //   description: "System configuration and management",
+        //   stats: [
+        //     {
+        //       label: "Total Users",
+        //       value: String(dashboardStats.admin?.totalUsers ?? "—"),
+        //     },
+        //     {
+        //       label: "AI Sensitivity",
+        //       value: dashboardStats.admin?.aiSensitivity ?? "—",
+        //     },
+        //   ],
+        //   buttonText: "Admin Panel",
+        //   navigateTo: "/admin",
+        // },
       ]
     : [];
 
