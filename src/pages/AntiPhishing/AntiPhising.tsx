@@ -94,101 +94,102 @@ export default function AntiPhishing() {
     handleCheck(selectedURL);
   };
 
-  return (
-    <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
-      {/* SIDEBAR */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+ return (
+  <div className="flex w-screen min-h-screen bg-gray-50 overflow-x-hidden">
+    {/* SIDEBAR */}
+    <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* MAIN */}
-      <main className="flex-1 p-4 md:p-8 lg:p-10 lg:ml-[296px]">
-        {/* MOBILE MENU */}
-        <div className="lg:hidden mb-6">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+    {/* MAIN */}
+    <main className="flex-1 w-full p-4 sm:p-6 lg:ml-[296px]">
+      {/* MOBILE MENU */}
+      <div className="lg:hidden mb-4">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* HEADER */}
+      <header className="flex justify-between items-center mb-6 sm:mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Anti-Phishing Scanner
+          </h1>
+          <p className="text-gray-700 hidden md:block text-sm">
+            AI-powered URL analysis and threat detection
+          </p>
         </div>
+      </header>
 
-        {/* HEADER */}
-        <header className="flex justify-between items-start mb-10">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
-              Anti-Phishing Scanner
-            </h1>
-            <p className="text-sm md:text-base lg:text-lg text-gray-700">
-              AI-powered URL analysis and threat detection
-            </p>
-          </div>
-        </header>
+      {/* STAT CARDS */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <StatCard
+          title="Safe URLs"
+          value={String(stats.safe)}
+          subtitle="Total Scanned"
+          icon={<CheckCircle className="w-7 h-7 text-teal-400" />}
+        />
 
-        <div className="w-full flex flex-col gap-6">
-          {/* ========================== STAT CARDS ========================== */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-            <StatCard
-              title="Safe URLs"
-              value={String(stats.safe)}
-              subtitle="Total Scanned"
-              icon={<CheckCircle className="w-8 h-8 text-teal-400" />}
-            />
+        <StatCard
+          title="Suspicious"
+          value={String(stats.warning)}
+          subtitle="Total Scanned"
+          icon={<TriangleAlert className="w-7 h-7 text-yellow-400" />}
+        />
 
-            <StatCard
-              title="Suspicious"
-              value={String(stats.warning)}
-              subtitle="Total Scanned"
-              icon={<TriangleAlert className="w-8 h-8 text-yellow-400" />}
-            />
+        <StatCard
+          title="Threats Blocked"
+          value={String(stats.blocked)}
+          subtitle="Total Blocked URLs"
+          icon={<Shield className="w-7 h-7 text-red-400" />}
+        />
+      </section>
 
-            <StatCard
-              title="Threats Blocked"
-              value={String(stats.blocked)}
-              subtitle="Total Blocked URLs"
-              icon={<Shield className="w-8 h-8 text-red-400" />}
-            />
-          </div>
-
-          {/* ========================== URL INPUT ========================== */}
-          <div className="bg-[#2C2C2C] rounded-xl p-4 md:p-5 flex flex-col gap-4 text-white">
-            <label className="text-lg md:text-xl lg:text-2xl font-semibold">
+      {/* ANALYZE URL */}
+      <section className="bg-[#2C2C2C] p-4 sm:p-6 rounded-xl border border-black mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <Search className="w-6 sm:w-7 h-6 sm:h-7 text-teal-400 flex-shrink-0" />
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
               Analyze URL
-            </label>
-
-            <p className="text-xs md:text-sm opacity-80">
+            </h2>
+            <p className="text-gray-300 text-xs sm:text-sm">
               Enter a URL to scan for potential phishing threats
             </p>
-
-            <div className="flex flex-col md:flex-row gap-3">
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="contoh.com"
-                className="flex-1 bg-[#1E1E1E] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white"
-              />
-
-              <button
-                onClick={() => handleCheck()}
-                className="flex items-center justify-center gap-2 bg-teal-400 hover:bg-teal-500 rounded-lg px-5 py-2 md:px-6 font-semibold text-white whitespace-nowrap"
-              >
-                <Search className="w-5 h-5" />
-                Analyze
-              </button>
-            </div>
           </div>
-
-          {/* ========================== RECENT SCANS ========================== */}
-          <RecentScans
-            onScan={(url: string) => {
-              handleRescan(url);
-              refreshAfterAction();
-            }}
-          />
         </div>
-      </main>
-    </div>
-  );
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="contoh.com"
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-teal-500"
+          />
+
+          <button
+            onClick={() => handleCheck()}
+            className="inline-flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-5 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base"
+          >
+            <Search className="w-4 sm:w-5 h-4 sm:h-5" />
+            Analyze
+          </button>
+        </div>
+      </section>
+
+      {/* RECENT SCANS */}
+      <section className="bg-[#2C2C2C] p-3 sm:p-4 rounded-xl border border-black">
+        <RecentScans
+          onScan={(url: string) => {
+            handleRescan(url);
+            refreshAfterAction();
+          }}
+        />
+      </section>
+    </main>
+  </div>
+);
 }
