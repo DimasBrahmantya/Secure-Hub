@@ -19,6 +19,8 @@ import AdminPanel from "./pages/AdminPanel/AdminPanel";
 import UserManagement from "./pages/UserManagement/UserManagement";
 import Statistics from "./pages/Statistics&Reports/Statistics";
 import Monitoring from "./pages/Monitoring & Notification/Monitoring";
+import { Analytics } from "@vercel/analytics/react";
+import RouteAnalytics from "./RouteAnalytics";
 
 
 const queryClient = new QueryClient();
@@ -29,6 +31,7 @@ export default function App() {
       <TooltipProvider>
         <Sonner />
         <Toaster position="bottom-right" richColors/>
+        <RouteAnalytics />
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
@@ -47,6 +50,7 @@ export default function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Analytics />
       </TooltipProvider>
     </QueryClientProvider>
   );
